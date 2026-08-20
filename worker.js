@@ -10,16 +10,17 @@ export default {
 #roster,#rosterEmpty{display:none!important}
 #profiles{grid-template-columns:1fr 1fr!important}
 #attDate,#saveAttendance,#attGrid{display:none!important}
-#todayGameRecords{margin-top:18px;padding-top:14px;border-top:1px solid rgba(250,246,237,.14)}
-.today-game{padding:12px 0;border-bottom:1px solid rgba(250,246,237,.10)}
-.today-game:last-child{border-bottom:0}
-.today-game-time{font-size:10px;color:rgba(250,246,237,.5);margin-bottom:7px}
-.today-game-teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
-.today-team{font-weight:700;line-height:1.35}
+#todayGameRecords{margin-top:18px;padding:16px 0 0;border-top:1px solid rgba(250,246,237,.14)}
+#todayGameRecords h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#E8C978;margin:0 0 10px}
+.today-game{padding:14px 12px;border:1px solid rgba(250,246,237,.10);border-radius:12px;margin:8px 0;background:rgba(250,246,237,.035)}
+.today-game:last-child{margin-bottom:0}
+.today-game-time{font-size:10px;color:rgba(250,246,237,.5);margin-bottom:9px;text-transform:uppercase;letter-spacing:.08em}
+.today-game-teams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center}
+.today-team{font-weight:800;line-height:1.35;overflow-wrap:anywhere}
 .today-team.right{text-align:right}
-.today-score{font-size:20px;font-weight:800;color:#D4A537;white-space:nowrap}
-.today-winner{font-size:10px;color:#E8C978;margin-top:7px;font-weight:700}
-</style>
+.today-score{font-size:21px;font-weight:900;color:#D4A537;white-space:nowrap}
+.today-winner{font-size:10px;color:#E8C978;margin-top:8px;font-weight:800}
+@media(max-width:430px){.today-game-teams{gap:7px}.today-score{font-size:18px}.today-game{padding:12px 10px}}</style>
 <script>
 (function(){
 'use strict';
