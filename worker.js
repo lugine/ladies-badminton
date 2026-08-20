@@ -45,8 +45,36 @@ export default {
     } catch(e) {}
   }
 
+  function setupDuplicateCheck(){
+    try {
+      var button=document.getElementById('addPlayer');
+      if(!button || !window.supabase) return;
+      button.addEventListener('click', async function(event){
+        var first=document.getElementById('firstName');
+        var nick=document.getElementById('nickname');
+        if(!first) return;
+        var name=(nick && nick.value.trim()) || first.value.trim();
+        if(!name) return;
+        var client=window.supabase.createClient('https://zcahhfswtdrdmguppqtp.supabase.co','sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs');
+        var result=await client.from('players').select('id,name,nickname').ilike('name', first.value.trim()).limit(1);
+        var result2=await client.from('players').select('id,name,nickname').or('name.ilike.'+encodeURIComponent(name)+',nickname.ilike.'+encodeURIComponent(name)).limit(1);
+        var found=(result.data&&result.data[0]) || (result2.data&&result2.data[0]);
+        if(found){
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          var t=document.createElement('div');
+          t.textContent='That name is already taken. Please choose another name or contact the admin.';
+          t.style.cssText='position:fixed;z-index:100;bottom:18px;left:50%;transform:translateX(-50%);background:#D4A537;color:#211F1B;font-weight:800;padding:10px 16px;border-radius:20px;max-width:90%;text-align:center';
+          document.body.appendChild(t);
+          setTimeout(function(){t.remove()},3200);
+        }
+      }, true);
+    } catch(e) {}
+  }
+
   cleanPublicError();
   setDateAndSchedule();
+  setupDuplicateCheck();
   setInterval(cleanPublicError,250);
   setInterval(setDateAndSchedule,1000);
 
