@@ -1,273 +1,48 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="theme-color" content="#1F4B3F">
-<title>Ladies Badminton — Leaderboard</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><meta name="theme-color" content="#1F4B3F"><title>Ladies Badminton — Leaderboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--court:#1F4B3F;--deep:#163A30;--line:#FAF6ED;--dim:rgba(250,246,237,.14);--char:#211F1B;--gold:#D4A537;--soft:#E8C978;--blush:#E8998D;--danger:#C0594D}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:var(--court);color:var(--line);font-family:'Helvetica Neue',Arial,sans-serif;min-height:100vh;padding-bottom:60px}.wrap{max-width:520px;margin:auto;padding:20px 18px}.head{text-align:center;margin-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);font-weight:600}h1{font:700 30px Georgia,serif;margin:5px 0 3px}.sub{font-size:13px;color:rgba(250,246,237,.68)}.schedule{margin-top:10px;padding:11px 12px;border-radius:10px;background:rgba(212,165,55,.1);border:1px solid rgba(212,165,55,.25);color:var(--soft)}.schedule strong{display:block;font-size:14px;color:var(--line);margin-bottom:3px}.schedule small{font-size:11px;color:rgba(250,246,237,.65)}.status{margin-top:8px;font-size:11px;color:rgba(250,246,237,.48)}.status.err{color:var(--blush)}.card{background:var(--deep);border:1px solid var(--dim);border-radius:14px;padding:18px;margin-bottom:16px}.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--soft);margin:0 0 13px;display:flex;align-items:center;gap:8px}.card h2:before{content:'';width:14px;height:2px;background:var(--gold)}.fields{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:10px}.field{width:100%;background:var(--court);border:1px solid var(--dim);border-radius:8px;color:var(--line);padding:11px 12px;font-size:15px}.field:focus{outline:none;border-color:var(--gold)}.btn{border:0;border-radius:8px;padding:11px 15px;font-weight:700;font-size:14px;cursor:pointer}.gold{background:var(--gold);color:var(--char)}.ghost{background:transparent;color:var(--soft);border:1px solid var(--dim)}.danger{background:transparent;color:var(--blush);border:1px solid rgba(232,153,141,.3)}.btn:disabled{opacity:.35}.small{font-size:12px;line-height:1.5;color:rgba(250,246,237,.48)}.chips,.pick-grid,.att-grid{display:flex;flex-wrap:wrap;gap:8px}.chip,.pick,.att{background:var(--court);border:1px solid var(--dim);border-radius:9px;color:var(--line);padding:8px 11px;font-size:13px;cursor:pointer}.chip{border-radius:20px}.chip .x{border:0;background:none;color:rgba(250,246,237,.45);margin-left:5px}.pick.selw{background:var(--gold);color:var(--char);border-color:var(--gold);font-weight:700}.pick.sell{background:rgba(192,89,77,.25);border-color:var(--danger)}.att.present{background:rgba(212,165,55,.18);border-color:var(--gold);color:var(--soft);font-weight:700}.lb{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--dim);cursor:pointer}.lb:last-child{border-bottom:0}.rank{width:26px;text-align:center;font:700 15px Georgia,serif;color:rgba(250,246,237,.55)}.lb.top .rank,.lb.top .pct{color:var(--gold)}.name{flex:1;font-size:15px;font-weight:700}.full{font-size:10px;color:rgba(250,246,237,.42);font-weight:400;margin-top:2px}.stats{text-align:right}.pct{font-size:17px;font-weight:800}.wl{font-size:11px;color:rgba(250,246,237,.45)}.banner{font-size:12px;color:var(--soft);background:rgba(212,165,55,.1);border:1px solid rgba(212,165,55,.25);border-radius:8px;padding:8px 12px;margin-bottom:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.profile{background:var(--court);border:1px solid var(--dim);border-radius:11px;padding:12px;cursor:pointer;text-align:left;color:var(--line)}.profile strong{display:block;font-size:16px}.profile .meta{font-size:11px;color:rgba(250,246,237,.5);margin-top:4px}.profile .pstats{display:flex;gap:16px;margin-top:9px;font-size:11px;color:var(--soft)}.profile .pstats b{display:block;color:var(--line);font-size:14px}.week{border-top:1px solid var(--dim);padding:12px 0}.week:first-child{border-top:0}.week-title{font-weight:700;font-size:14px}.admin-game{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--dim);font-size:12px}.admin-game:last-child{border-bottom:0}.admin-game .gt{flex:1}.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:20;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.box{background:var(--deep);border:1px solid var(--dim);border-radius:14px;padding:20px;max-width:400px;width:100%;max-height:90vh;overflow:auto}.row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.form{display:grid;gap:10px}.label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(250,246,237,.45)}.footer{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px}@media(max-width:430px){.fields{grid-template-columns:1fr 1fr}.fields .btn{grid-column:1/-1}.grid2{grid-template-columns:1fr}}
+:root{--court:#1F4B3F;--deep:#163A30;--line:#FAF6ED;--dim:rgba(250,246,237,.14);--gold:#D4A537;--soft:#E8C978;--blush:#E8998D;--char:#211F1B}*{box-sizing:border-box}body{margin:0;background:var(--court);color:var(--line);font-family:Arial,sans-serif;padding:20px 16px 60px}.wrap{max-width:520px;margin:auto}.head{text-align:center;margin-bottom:18px}.eyebrow{font-size:11px;letter-spacing:.2em;color:var(--soft)}h1{font:700 30px Georgia,serif;margin:6px 0}.sub{font-size:13px;color:#c8c3b8}.schedule{margin-top:10px;padding:11px;border:1px solid rgba(212,165,55,.25);background:rgba(212,165,55,.1);border-radius:10px}.schedule strong{display:block;color:var(--line);font-size:14px}.schedule small{display:block;color:var(--soft);margin-top:3px}.card{background:var(--deep);border:1px solid var(--dim);border-radius:14px;padding:18px;margin-bottom:16px}.card h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin:0 0 14px}.row{display:flex;gap:8px;flex-wrap:wrap}.grow{flex:1;min-width:0}.field{width:100%;padding:11px 12px;border-radius:8px;border:1px solid var(--dim);background:var(--court);color:var(--line)}.field:focus{outline:none;border-color:var(--gold)}.btn{padding:11px 15px;border-radius:8px;border:1px solid transparent;font-weight:700;cursor:pointer}.gold{background:var(--gold);color:var(--char)}.ghost{background:transparent;color:var(--soft);border-color:var(--dim)}.danger{background:transparent;color:var(--blush);border-color:rgba(232,153,141,.3)}.btn:disabled{opacity:.35}.muted{font-size:12px;color:#a9aaa1}.chips,.pickgrid,.attgrid{display:flex;flex-wrap:wrap;gap:8px}.chip,.pick,.att{background:var(--court);color:var(--line);border:1px solid var(--dim);border-radius:9px;padding:8px 11px;cursor:pointer}.chip{border-radius:20px}.pick.win{background:var(--gold);color:var(--char);border-color:var(--gold);font-weight:700}.pick.lose{background:rgba(192,89,77,.25);border-color:var(--blush)}.att.present{background:rgba(212,165,55,.2);border-color:var(--gold)}.lb{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--dim);cursor:pointer}.lb:last-child{border-bottom:0}.rank{width:26px;text-align:center;font:700 15px Georgia,serif;color:#aaa}.lb.top .rank,.lb.top .pct{color:var(--gold)}.name{flex:1;font-weight:700}.full{font-size:10px;color:#999;margin-top:3px;font-weight:400}.stats{text-align:right}.pct{font-weight:800;font-size:17px}.wl{font-size:11px;color:#999}.profiles{display:grid;grid-template-columns:1fr 1fr;gap:9px}.profile{background:var(--court);border:1px solid var(--dim);border-radius:11px;padding:12px;cursor:pointer;color:var(--line);text-align:left}.profile strong{display:block}.profile small{color:#999}.profile .mini{display:flex;justify-content:space-between;margin-top:9px;color:var(--soft);font-size:11px}.week{padding:11px 0;border-top:1px solid var(--dim)}.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.box{max-width:400px;width:100%;background:var(--deep);border:1px solid var(--dim);border-radius:14px;padding:20px;max-height:90vh;overflow:auto}.footer{text-align:center;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.admin-only{display:none}@media(max-width:430px){.profiles{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="head">
-    <div class="eyebrow">ISNA · Ladies Badminton</div>
-    <h1>Leaderboard 🏸</h1>
-    <div class="sub" id="dateLine"></div>
-    <div class="schedule"><strong id="nextGameLabel">Next game</strong><small id="nextGameCountdown"></small></div>
-    <div class="status" id="status">Connecting to scores…</div>
-  </div>
-
-  <div class="card">
-    <h2>Roster</h2>
-    <div class="fields">
-      <input class="field" id="fullName" placeholder="Full name" maxlength="60">
-      <input class="field" id="nickname" placeholder="Nickname" maxlength="30">
-      <button class="btn gold" id="addPlayer">Add Player</button>
-    </div>
-    <div class="small" style="margin-bottom:10px">Your nickname is what appears on the leaderboard.</div>
-    <div class="chips" id="roster"></div>
-    <div class="small" id="rosterEmpty">No players yet.</div>
-  </div>
-
-  <div class="card" id="adminCard" style="display:none">
-    <h2>Admin</h2>
-    <div class="small" style="margin-bottom:10px">Only you can edit profiles, attendance, and game results.</div>
-    <div class="fields">
-      <input class="field" type="date" id="attDate">
-      <button class="btn gold" id="saveAtt">Save Attendance</button>
-    </div>
-    <div class="att-grid" id="attGrid"></div>
-    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn gold" id="showGame">Record a Game</button>
-      <button class="btn ghost" id="showOldGame">Add Old Game</button>
-    </div>
-  </div>
-
-  <div class="card" id="gameCard" style="display:none">
-    <h2 id="gameTitle">Record a Game</h2>
-    <div class="fields">
-      <input class="field" type="date" id="gameDate">
-      <input class="field" type="time" id="gameTime">
-    </div>
-    <div class="small">Winners (tap 2)</div>
-    <div class="pick-grid" id="winners"></div>
-    <div class="small" style="margin-top:12px">Losers (tap 2)</div>
-    <div class="pick-grid" id="losers"></div>
-    <div style="margin-top:14px;display:flex;gap:8px">
-      <button class="btn gold" id="saveGame" disabled>Save Game</button>
-      <button class="btn ghost" id="cancelGame">Cancel</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h2>Standings</h2>
-    <div class="banner">🏆 Top 5 by win % get a treat!</div>
-    <div class="small" id="weekSummary"></div>
-    <div id="leaderboard"></div>
-    <div class="small" id="lbEmpty">No games recorded this week.</div>
-  </div>
-
-  <div class="card">
-    <h2>Weekly History</h2>
-    <div id="history"></div>
-    <div class="small" id="historyEmpty">No previous weeks yet.</div>
-  </div>
-
-  <div class="card">
-    <h2>Player Profiles</h2>
-    <div class="small" style="margin-bottom:11px">Tap a player to view their full profile.</div>
-    <div class="grid2" id="profiles"></div>
-    <div class="small" id="profilesEmpty">No player profiles yet.</div>
-  </div>
-
-  <div class="card" id="manageGames" style="display:none">
-    <h2>Manage Games</h2>
-    <div class="small" style="margin-bottom:10px">Edit or delete existing games. This includes older games already in your database.</div>
-    <div id="adminGames"></div>
-    <div class="small" id="adminGamesEmpty">No games yet.</div>
-  </div>
-
-  <div class="footer">
-    <button class="btn ghost" id="adminLogin">Admin Login</button>
-    <button class="btn danger" id="adminLogout" style="display:none">Log Out</button>
-  </div>
-</div>
-
-<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
-
+<div class="head"><div class="eyebrow">ISNA · LADIES BADMINTON</div><h1>Leaderboard 🏸</h1><div class="sub" id="today"></div><div class="schedule"><strong id="nextGameTitle">Next game</strong><small id="countdown">Calculating…</small></div></div>
+<div class="card"><h2>Roster</h2><div class="row"><input id="fullName" class="field grow" placeholder="Full name"><input id="nickname" class="field grow" placeholder="Nickname"><button id="addPlayer" class="btn gold">Add Player</button></div><div class="muted" style="margin:10px 0">Your nickname is what everyone sees.</div><div id="roster" class="chips"></div><div id="rosterEmpty" class="muted">No players yet.</div></div>
+<div id="adminPanel" class="card admin-only"><h2>Admin</h2><div class="row"><input id="attDate" type="date" class="field grow"><button id="saveAttendance" class="btn gold">Save Attendance</button></div><div id="attGrid" class="attgrid" style="margin-top:10px"></div><div class="row" style="margin-top:14px"><button id="newGame" class="btn gold">Record Game</button><button id="newOldGame" class="btn ghost">Enter Older Game</button></div></div>
+<div id="gamePanel" class="card admin-only"><h2 id="gameHeading">Record Game</h2><div class="muted">Game date</div><input id="gameDate" type="datetime-local" class="field" style="margin:7px 0 12px"><div class="muted">Winners — tap 2</div><div id="winnerGrid" class="pickgrid" style="margin:7px 0 12px"></div><div class="muted">Losers — tap 2</div><div id="loserGrid" class="pickgrid" style="margin:7px 0 12px"></div><div class="row"><button id="cancelGame" class="btn ghost">Cancel</button><button id="saveGame" class="btn gold" disabled>Save Game</button></div></div>
+<div class="card"><h2>Standings</h2><div id="weekLabel" class="muted"></div><div id="leaderboard"></div><div id="lbEmpty" class="muted">No games recorded this week.</div></div>
+<div class="card"><h2>Weekly History</h2><div id="history"></div><div id="historyEmpty" class="muted">No previous weeks yet.</div></div>
+<div class="card"><h2>Player Profiles</h2><div class="muted" style="margin-bottom:10px">Tap a player for their profile.</div><div id="profiles" class="profiles"></div><div id="profilesEmpty" class="muted">No profiles yet.</div></div>
+<div id="managePanel" class="card admin-only"><h2>Manage Games</h2><div id="manageGames"></div><div id="manageEmpty" class="muted">No games yet.</div></div>
+<div class="footer"><button id="adminLogin" class="btn ghost">Admin Login</button><button id="adminLogout" class="btn danger" style="display:none">Log Out</button></div>
+</div><div id="modal" class="modal"><div id="modalBox" class="box"></div></div>
 <script>
-const SUPABASE_URL='https://zcahhfswtdrdmguppqtp.supabase.co';
-const SUPABASE_KEY='sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs';
-const ADMIN_UID='a517d9bd-bc9c-4e59-b36d-503747621aa4';
-const supa=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let players=[],games=[],attendance=[],session=null,selW=[],selL=[],editingGameId=null;
-const $=id=>document.getElementById(id);
-const esc=s=>{const d=document.createElement('div');d.textContent=s??'';return d.innerHTML};
-const nameOf=p=>p?.nickname||p?.name||'Unknown';
-const isAdmin=()=>session?.user?.id===ADMIN_UID;
-function localDateString(){return new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
-function dateKey(d){const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`}
-function weekId(d=new Date()){const x=new Date(d);x.setHours(0,0,0,0);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return dateKey(x)}
-function weekLabel(id){const s=new Date(id+'T00:00:00'),e=new Date(s);e.setDate(e.getDate()+6);return `${s.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} – ${e.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`}
-function setStatus(text,error=false){$('status').textContent=text;$('status').className='status'+(error?' err':'')}
-$('dateLine').textContent=localDateString();
-$('attDate').value=dateKey(new Date());
-$('gameDate').value=dateKey(new Date());
-$('gameTime').value=new Date().toTimeString().slice(0,5);
-
-// Thursday 6–8 PM. August 27, 2026 is the known blackout week.
-const BLACKOUTS=new Set(['2026-08-27']);
-function nextScheduledGame(){
-  const now=new Date();
-  for(let i=0;i<30;i++){
-    const d=new Date(now);d.setDate(d.getDate()+i);d.setHours(18,0,0,0);
-    if(d.getDay()!==4)continue;
-    const k=dateKey(d);if(BLACKOUTS.has(k))continue;
-    const end=new Date(d);end.setHours(20,0,0,0);
-    if(end<=now)continue;
-    return {start:d,end,k};
-  }
-  return null;
+const URL='https://zcahhfswtdrdmguppqtp.supabase.co',KEY='sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs',ADMIN='a517d9bd-bc9c-4e59-b36d-503747621aa4';const db=supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});let players=[],games=[],attendance=[],session=null,winSel=[],loseSel=[],editingId=null;const $=id=>document.getElementById(id);
+$('today').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});$('attDate').value=new Date().toISOString().slice(0,10);
+function toast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#D4A537;color:#211F1B;font-weight:700;padding:10px 16px;border-radius:20px;z-index:50';document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}function esc(v){const d=document.createElement('div');d.textContent=v||'';return d.innerHTML}function admin(){return session?.user?.id===ADMIN}function displayName(p){return p?.nickname||p?.name||'Player'}function monday(d){const x=new Date(d);x.setHours(0,0,0,0);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return x}function weekId(d){return monday(d).toISOString().slice(0,10)}function weekText(id){const s=new Date(id+'T00:00:00'),e=new Date(s);e.setDate(e.getDate()+6);return s.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' – '+e.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}function parseArr(v){if(Array.isArray(v))return v;if(typeof v==='string'){try{const x=JSON.parse(v);return Array.isArray(x)?x:v.split(',').map(s=>s.trim()).filter(Boolean)}catch{return v.split(',').map(s=>s.trim()).filter(Boolean)}}return []}function gameDate(g){return g.played_at||g.created_at||new Date().toISOString()}function vals(g){return [...parseArr(g.winners),...parseArr(g.losers)]}function findPlayer(v){return players.find(p=>p.id===v||p.name===v||p.nickname===v)}function stats(gs){const m={};players.forEach(p=>m[p.id]={id:p.id,name:displayName(p),full:p.full_name||p.name||'',w:0,g:0});gs.forEach(g=>{vals(g).forEach(v=>{const p=findPlayer(v);if(p)m[p.id].g++});parseArr(g.winners).forEach(v=>{const p=findPlayer(v);if(p)m[p.id].w++})});return Object.values(m).filter(x=>x.g).map(x=>({...x,p:x.w/x.g*100})).sort((a,b)=>b.p-a.p||b.w-a.w||a.name.localeCompare(b.name))}
+async function load(){try{const [p,g,a]=await Promise.all([db.from('players').select('*').order('created_at'),db.from('games').select('*').order('played_at'),db.from('attendance').select('*').order('session_date',{ascending:false})]);if(p.error)throw p.error;if(g.error)throw g.error;if(a.error)throw a.error;players=p.data||[];games=g.data||[];attendance=a.data||[];render()}catch(e){console.error(e);toast('Database load failed')}}
+function render(){renderRoster();renderAdmin();renderPickers();renderStandings();renderHistory();renderProfiles();renderManage();renderAttendance()}
+function renderRoster(){const r=$('roster');r.innerHTML='';const a=players.filter(p=>p.active!==false);a.forEach(p=>{const b=document.createElement('button');b.className='chip';b.textContent=displayName(p);b.onclick=()=>profile(p);r.appendChild(b)});$('rosterEmpty').style.display=a.length?'none':'block'}function renderAdmin(){$('.x')
 }
-function updateSchedule(){
-  const x=nextScheduledGame();if(!x)return;
-  const now=new Date();
-  const label=x.k===dateKey(now)?'Today’s game':'Next game';
-  $('nextGameLabel').textContent=label;
-  const start=x.start,end=x.end;
-  if(now>=start&&now<end){
-    $('nextGameCountdown').textContent='Happening now · until 8:00 PM';
-  }else{
-    const ms=start-now;
-    const days=Math.floor(ms/86400000),hrs=Math.floor((ms%86400000)/3600000),mins=Math.floor((ms%3600000)/60000),secs=Math.floor((ms%60000)/1000);
-    const when=start.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'})+' · 6:00–8:00 PM';
-    const parts=[];if(days)parts.push(days+'d');if(hrs)parts.push(hrs+'h');if(mins)parts.push(mins+'m');parts.push(secs+'s');
-    $('nextGameLabel').textContent=when;
-    $('nextGameCountdown').textContent='Starts in '+parts.join(' ');
-  }
-}
-updateSchedule();setInterval(updateSchedule,1000);
-
-function playerById(id){return players.find(p=>p.id===id)}
-function resolveIds(values){
-  return (values||[]).map(v=>{
-    const direct=playerById(v);if(direct)return direct.id;
-    const s=String(v).trim().toLowerCase();
-    const p=players.find(x=>[x.nickname,x.name,x.full_name].filter(Boolean).some(n=>String(n).trim().toLowerCase()===s));
-    return p?.id||null;
-  }).filter(Boolean);
-}
-function gamePeople(g){return [...resolveIds(g.winners),...resolveIds(g.losers)]}
-function gameWinners(g){return resolveIds(g.winners)}
-function stats(gs){
-  const m={};players.forEach(p=>m[p.id]={id:p.id,name:nameOf(p),full:p.full_name||p.name,wins:0,games:0});
-  gs.forEach(g=>{gamePeople(g).forEach(id=>{if(m[id])m[id].games++});gameWinners(g).forEach(id=>{if(m[id])m[id].wins++})});
-  return Object.values(m).filter(x=>x.games).map(x=>({...x,pct:x.games?x.wins/x.games*100:0})).sort((a,b)=>b.pct-a.pct||b.wins-a.wins||a.name.localeCompare(b.name));
-}
-function gameDisplay(g){
-  const w=(g.winners||[]).map(v=>playerById(v)?.nickname||playerById(v)?.name||v).join(' + ');
-  const l=(g.losers||[]).map(v=>playerById(v)?.nickname||playerById(v)?.name||v).join(' + ');
-  const d=new Date(g.played_at);
-  return `${w} beat ${l} · ${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}`;
-}
-async function load(){
-  setStatus('Loading scores…');
-  try{
-    const [p,g,a]=await Promise.all([
-      supa.from('players').select('*').order('created_at'),
-      supa.from('games').select('*').order('played_at'),
-      supa.from('attendance').select('*').order('session_date',{ascending:false})
-    ]);
-    if(p.error)throw p.error;if(g.error)throw g.error;if(a.error)throw a.error;
-    players=p.data||[];games=g.data||[];attendance=a.data||[];
-    setStatus('Online ✓');render();
-  }catch(e){console.error(e);setStatus('Could not load scores. The app is still usable — refresh to retry.',true);render();}
-}
-function render(){renderRoster();renderAdmin();renderPicker();renderStandings();renderHistory();renderProfiles();renderAdminGames();}
-function renderRoster(){
-  const root=$('roster');root.innerHTML='';
-  players.filter(p=>p.active!==false).forEach(p=>{
-    const c=document.createElement('div');c.className='chip';c.innerHTML='<span>'+esc(nameOf(p))+'</span>';c.onclick=()=>openProfile(p.id);
-    if(isAdmin()){const x=document.createElement('button');x.className='x';x.textContent='✕';x.onclick=e=>{e.stopPropagation();deactivatePlayer(p.id)};c.appendChild(x)}
-    root.appendChild(c);
-  });
-  $('rosterEmpty').style.display=root.children.length?'none':'block';
-}
-function renderAdmin(){
-  const a=isAdmin();$('adminCard').style.display=a?'block':'none';$('manageGames').style.display=a?'block':'none';$('adminLogin').style.display=a?'none':'inline-block';$('adminLogout').style.display=a?'inline-block':'none';
-  if(a)renderAttendance();
-}
-function renderAttendance(){
-  const root=$('attGrid');root.innerHTML='';const day=$('attDate').value;
-  players.filter(p=>p.active!==false).forEach(p=>{
-    const b=document.createElement('button');b.className='att'+(attendance.some(a=>a.player_id===p.id&&a.session_date===day&&a.present)?' present':'');b.dataset.id=p.id;b.textContent=nameOf(p);b.onclick=()=>b.classList.toggle('present');root.appendChild(b);
-  });
-}
-function renderPicker(){
-  if(!isAdmin())return;const wg=$('winners'),lg=$('losers');wg.innerHTML='';lg.innerHTML='';
-  players.filter(p=>p.active!==false).forEach(p=>{
-    const a=document.createElement('button');a.className='pick'+(selW.includes(p.id)?' selw':'');a.textContent=nameOf(p);a.disabled=selL.includes(p.id)||(!selW.includes(p.id)&&selW.length>=2);a.onclick=()=>togglePick(p.id,'w');wg.appendChild(a);
-    const b=document.createElement('button');b.className='pick'+(selL.includes(p.id)?' sell':'');b.textContent=nameOf(p);b.disabled=selW.includes(p.id)||(!selL.includes(p.id)&&selL.length>=2);b.onclick=()=>togglePick(p.id,'l');lg.appendChild(b);
-  });
-  $('saveGame').disabled=!(selW.length===2&&selL.length===2);
-}
-function togglePick(id,t){const a=t==='w'?selW:selL;if(a.includes(id))a.splice(a.indexOf(id),1);else if(a.length<2&&!selW.includes(id)&&!selL.includes(id))a.push(id);renderPicker()}
-function renderStandings(){
-  const gs=games.filter(g=>g.week_id===weekId()),s=stats(gs),root=$('leaderboard');root.innerHTML='';
-  $('weekSummary').textContent=`${weekLabel(weekId())} · ${gs.length} game${gs.length===1?'':'s'}`;$('lbEmpty').style.display=s.length?'none':'block';
-  s.forEach((x,i)=>{const r=document.createElement('div');r.className='lb'+(i<5?' top':'');r.innerHTML=`<div class="rank">${i+1}</div><div class="name">${esc(x.name)}<div class="full">${esc(x.full)}</div></div><div class="stats"><div class="pct">${x.pct.toFixed(0)}%</div><div class="wl">${x.wins}W – ${x.games-x.wins}L</div></div>`;r.onclick=()=>openProfile(x.id);root.appendChild(r)})
-}
-function renderHistory(){
-  const root=$('history');root.innerHTML='';const weeks=[...new Set(games.map(g=>g.week_id))].sort().reverse().filter(w=>w!==weekId());$('historyEmpty').style.display=weeks.length?'none':'block';
-  weeks.forEach(wk=>{const box=document.createElement('div');box.className='week';const gs=games.filter(g=>g.week_id===wk),s=stats(gs);box.innerHTML=`<div class="week-title">${weekLabel(wk)}</div><div class="small" style="margin:3px 0 8px">${gs.length} game${gs.length===1?'':'s'}</div>`;s.forEach((x,i)=>{const row=document.createElement('div');row.className='lb';row.innerHTML=`<div class="rank">${i+1}</div><div class="name">${esc(x.name)}</div><div class="stats"><div class="pct">${x.pct.toFixed(0)}%</div><div class="wl">${x.wins}W – ${x.games-x.wins}L</div></div>`;row.onclick=()=>openProfile(x.id);box.appendChild(row)});root.appendChild(box)})
-}
-function renderProfiles(){
-  const root=$('profiles');root.innerHTML='';const active=players.filter(p=>p.active!==false);$('profilesEmpty').style.display=active.length?'none':'block';
-  active.forEach(p=>{const gs=games.filter(g=>gamePeople(g).includes(p.id));const wins=gs.filter(g=>gameWinners(g).includes(p.id)).length;const c=document.createElement('button');c.className='profile';c.innerHTML=`<strong>${esc(nameOf(p))}</strong><div class="meta">${esc(p.full_name||p.name||'')}</div><div class="pstats"><span>Attendance<b>${attendance.filter(a=>a.player_id===p.id&&a.present).length}</b></span><span>Wins<b>${wins}</b></span><span>Win %<b>${gs.length?(wins/gs.length*100).toFixed(0):0}%</b></span></div>`;c.onclick=()=>openProfile(p.id);root.appendChild(c)})
-}
-function renderAdminGames(){
-  if(!isAdmin())return;const root=$('adminGames');root.innerHTML='';const ordered=[...games].sort((a,b)=>new Date(b.played_at)-new Date(a.played_at));$('adminGamesEmpty').style.display=ordered.length?'none':'block';
-  ordered.forEach(g=>{const row=document.createElement('div');row.className='admin-game';row.innerHTML=`<div class="gt">${esc(gameDisplay(g))}</div><button class="btn ghost" data-edit="${g.id}">Edit</button><button class="btn danger" data-del="${g.id}">Delete</button>`;root.appendChild(row)});
-  root.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editGame(b.dataset.edit));root.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>deleteGame(b.dataset.del));
-}
-function openModal(html){$('modalBox').innerHTML=html;$('modal').classList.add('show')}
-function closeModal(){$('modal').classList.remove('show');$('modalBox').innerHTML=''}
-$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-function openProfile(id){
-  const p=playerById(id);if(!p)return;const gs=games.filter(g=>gamePeople(g).includes(id));const wins=gs.filter(g=>gameWinners(g).includes(id)).length;const att=attendance.filter(a=>a.player_id===id&&a.present).length;
-  openModal(`<h3>${esc(nameOf(p))}</h3><div class="small"><b>Full name:</b> ${esc(p.full_name||p.name||'')}<br><b>Nickname:</b> ${esc(nameOf(p))}<br><b>Date joined:</b> ${esc(p.date_joined||'')}<br><b>Attendance:</b> ${att} session${att===1?'':'s'}<br><b>Wins:</b> ${wins}<br><b>Games:</b> ${gs.length}<br><b>Win rate:</b> ${gs.length?(wins/gs.length*100).toFixed(0):0}%</div>${isAdmin()?'<div class="row"><button class="btn gold" id="editProfile">Edit Profile</button></div>':''}<div class="row"><button class="btn ghost" id="closeProfile">Close</button></div>`);
-  $('closeProfile').onclick=closeModal;if(isAdmin())$('editProfile').onclick=()=>editProfile(p);
-}
-function editProfile(p){
-  openModal(`<h3>Edit Profile</h3><div class="form"><div class="label">Full name</div><input class="field" id="pfFull" value="${esc(p.full_name||p.name||'')}"><div class="label">Nickname</div><input class="field" id="pfNick" value="${esc(p.nickname||p.name||'')}"><div class="label">Date joined</div><input class="field" type="date" id="pfDate" value="${esc(p.date_joined||'')}"></div><div class="row"><button class="btn ghost" id="cancelEdit">Cancel</button><button class="btn gold" id="saveProfile">Save</button></div>`);
-  $('cancelEdit').onclick=()=>openProfile(p.id);$('saveProfile').onclick=async()=>{try{const full=$('pfFull').value.trim(),nick=$('pfNick').value.trim(),date=$('pfDate').value;const r=await supa.from('players').update({full_name:full,nickname:nick,date_joined:date}).eq('id',p.id);if(r.error)throw r.error;Object.assign(p,{full_name:full,nickname:nick,date_joined:date});closeModal();render()}catch(e){alert('Could not save profile: '+e.message)}}
-}
-async function deactivatePlayer(id){if(!isAdmin()||!confirm('Remove this player from the active roster? Past games stay.'))return;const r=await supa.from('players').update({active:false}).eq('id',id);if(r.error){alert(r.error.message);return}const p=playerById(id);if(p)p.active=false;render()}
-function login(){
-  openModal(`<h3>Admin Login</h3><div class="form"><input class="field" type="email" id="loginEmail" placeholder="Email"><input class="field" type="password" id="loginPassword" placeholder="Password"><button class="btn gold" id="doLogin">Log In</button></div><div class="row"><button class="btn ghost" id="cancelLogin">Cancel</button></div>`);
-  $('cancelLogin').onclick=closeModal;$('doLogin').onclick=async()=>{const email=$('loginEmail').value.trim(),password=$('loginPassword').value;try{const {data,error}=await supa.auth.signInWithPassword({email,password});if(error)throw error;if(data.user.id!==ADMIN_UID)throw new Error('This account is not the admin account.');session=data.session;closeModal();render();toast('Admin mode on ✓')}catch(e){alert(e.message)}}
-}
-async function addPlayer(){
-  const full=$('fullName').value.trim(),nick=$('nickname').value.trim()||full;if(!full){alert('Please enter a full name.');return}
-  try{const r=await supa.from('players').insert({name:nick,full_name:full,nickname:nick,date_joined:dateKey(new Date()),active:true}).select().single();if(r.error)throw r.error;players.push(r.data);$('fullName').value='';$('nickname').value='';render();toast('Player added ✓')}catch(e){alert(e.message.includes('duplicate')?'That player already exists.':e.message)}
-}
-function openGameForm(old=false,game=null){
-  editingGameId=game?.id||null;selW=game?resolveIds(game.winners):[];selL=game?resolveIds(game.losers):[];$('gameTitle').textContent=game?(old?'Edit Game':'Edit Game'):(old?'Add Old Game':'Record a Game');$('gameDate').value=game?dateKey(new Date(game.played_at)):dateKey(new Date());$('gameTime').value=game?new Date(game.played_at).toTimeString().slice(0,5):new Date().toTimeString().slice(0,5);$('gameCard').style.display='block';$('gameCard').scrollIntoView({behavior:'smooth',block:'start'});renderPicker()}
-$('showGame').onclick=()=>openGameForm(false,null);$('showOldGame').onclick=()=>openGameForm(true,null);$('cancelGame').onclick=()=>{$('gameCard').style.display='none';editingGameId=null;selW=[];selL=[];renderPicker()};
-$('saveGame').onclick=async()=>{
-  if(!isAdmin()||selW.length!==2||selL.length!==2)return;const dt=new Date($('gameDate').value+'T'+$('gameTime').value+':00');const payload={winners:selW,losers:selL,played_at:dt.toISOString(),week_id:weekId(dt)};
-  try{let r;if(editingGameId)r=await supa.from('games').update(payload).eq('id',editingGameId);else r=await supa.from('games').insert(payload);if(r.error)throw r.error;await load();$('gameCard').style.display='none';editingGameId=null;selW=[];selL=[];renderPicker();toast('Game saved ✓')}catch(e){alert('Could not save game: '+e.message)}
-};
-function editGame(id){const g=games.find(x=>String(x.id)===String(id));if(g)openGameForm(false,g)}
-async function deleteGame(id){if(!confirm('Delete this game permanently?'))return;const r=await supa.from('games').delete().eq('id',id);if(r.error){alert(r.error.message);return}await load();toast('Game deleted')}
-$('saveAtt').onclick=async()=>{if(!isAdmin())return;const day=$('attDate').value;try{for(const p of players.filter(p=>p.active!==false)){await supa.from('attendance').delete().eq('player_id',p.id).eq('session_date',day)}for(const b of document.querySelectorAll('#attGrid .att.present')){const r=await supa.from('attendance').insert({player_id:b.dataset.id,session_date:day,present:true});if(r.error)throw r.error}await load();toast('Attendance saved ✓')}catch(e){alert('Could not save attendance: '+e.message)}};
-$('attDate').onchange=renderAttendance;$('addPlayer').onclick=addPlayer;$('adminLogin').onclick=login;$('adminLogout').onclick=async()=>{await supa.auth.signOut();session=null;render()};
-supa.auth.getSession().then(({data})=>{session=data.session;render();load()});
-supa.auth.onAuthStateChange((_event,s)=>{session=s;renderAdmin();renderRoster();});
-</script>
-</body>
-</html>
+function renderAdmin(){document.querySelectorAll('.admin-only').forEach(e=>e.style.display=admin()?'block':'none');$('adminLogin').style.display=admin()?'none':'inline-block';$('adminLogout').style.display=admin()?'inline-block':'none'}
+function renderPickers(){if(!admin())return;const a=$('winnerGrid'),b=$('loserGrid');a.innerHTML='';b.innerHTML='';players.filter(p=>p.active!==false).forEach(p=>{const w=document.createElement('button');w.className='pick'+(winSel.includes(p.id)?' win':'');w.textContent=displayName(p);w.disabled=loseSel.includes(p.id)||(!winSel.includes(p.id)&&winSel.length>=2);w.onclick=()=>choose(p.id,'w');a.appendChild(w);const l=document.createElement('button');l.className='pick'+(loseSel.includes(p.id)?' lose':'');l.textContent=displayName(p);l.disabled=winSel.includes(p.id)||(!loseSel.includes(p.id)&&loseSel.length>=2);l.onclick=()=>choose(p.id,'l');b.appendChild(l)});$('saveGame').disabled=!(winSel.length===2&&loseSel.length===2)}function choose(id,t){const a=t==='w'?winSel:loseSel;if(a.includes(id))a.splice(a.indexOf(id),1);else if(a.length<2&&!winSel.includes(id)&&!loseSel.includes(id))a.push(id);renderPickers()}
+function renderStandings(){const id=weekId(new Date()),gs=games.filter(g=>(g.week_id||weekId(new Date(gameDate(g))))===id),s=stats(gs),r=$('leaderboard');r.innerHTML='';$('weekLabel').textContent=weekText(id)+' · '+gs.length+' game'+(gs.length===1?'':'s');$('lbEmpty').style.display=s.length?'none':'block';s.forEach((x,i)=>{const row=document.createElement('div');row.className='lb'+(i<5?' top':'');row.innerHTML='<div class="rank">'+(i+1)+'</div><div class="name">'+esc(x.name)+'<div class="full">'+esc(x.full)+'</div></div><div class="stats"><div class="pct">'+x.p.toFixed(0)+'%</div><div class="wl">'+x.w+'W – '+(x.g-x.w)+'L</div></div>';row.onclick=()=>profile(players.find(p=>p.id===x.id));r.appendChild(row)})}
+function renderHistory(){const weeks=[...new Set(games.map(g=>g.week_id||weekId(new Date(gameDate(g))))].sort().reverse().filter(w=>w!==weekId(new Date())),r=$('history');r.innerHTML='';$('historyEmpty').style.display=weeks.length?'none':'block';weeks.forEach(wk=>{const gs=games.filter(g=>(g.week_id||weekId(new Date(gameDate(g))))===wk),s=stats(gs),box=document.createElement('div');box.className='week';box.innerHTML='<strong>'+weekText(wk)+'</strong><div class="muted">'+gs.length+' game'+(gs.length===1?'':'s')+'</div>'+s.map((x,i)=>'<div class="lb"><div class="rank">'+(i+1)+'</div><div class="name">'+esc(x.name)+'</div><div class="stats"><div class="pct">'+x.p.toFixed(0)+'%</div><div class="wl">'+x.w+'W – '+(x.g-x.w)+'L</div></div></div>').join('');r.appendChild(box)})}
+function renderProfiles(){const r=$('profiles');r.innerHTML='';const ps=players.filter(p=>p.active!==false);$('profilesEmpty').style.display=ps.length?'none':'block';ps.forEach(p=>{const gs=games.filter(g=>vals(g).some(v=>findPlayer(v)?.id===p.id)),w=gs.filter(g=>parseArr(g.winners).some(v=>findPlayer(v)?.id===p.id)).length,a=attendance.filter(x=>x.player_id===p.id&&x.present).length,b=document.createElement('button');b.className='profile';b.innerHTML='<strong>'+esc(displayName(p))+'</strong><small>'+esc(p.full_name||p.name||'')+'</small><div class="mini"><span>'+a+' attend.</span><span>'+w+' wins</span><span>'+(gs.length?Math.round(w/gs.length*100):0)+'%</span></div>';b.onclick=()=>profile(p);r.appendChild(b)})}
+function renderAttendance(){if(!admin())return;const r=$('attGrid'),d=$('attDate').value;r.innerHTML='';players.filter(p=>p.active!==false).forEach(p=>{const b=document.createElement('button');b.className='att'+(attendance.some(a=>a.player_id===p.id&&a.session_date===d&&a.present)?' present':'');b.textContent=displayName(p);b.onclick=()=>b.classList.toggle('present');r.appendChild(b)})}
+async function saveAttendance(){const d=$('attDate').value;try{for(const p of players){await db.from('attendance').delete().eq('player_id',p.id).eq('session_date',d);const b=[...$('attGrid').children].find(x=>x.textContent===displayName(p));if(b?.classList.contains('present')){const q=await db.from('attendance').insert({player_id:p.id,session_date:d,present:true});if(q.error)throw q.error}}const q=await db.from('attendance').select('*').order('session_date',{ascending:false});attendance=q.data||[];renderProfiles();toast('Attendance saved')}catch(e){console.error(e);toast('Could not save attendance')}}
+function openGame(g=null){editingId=g?.id||null;winSel=[];loseSel=[];$('gamePanel').style.display='block';$('gameHeading').textContent=g?'Edit Game':'Record Game';const d=new Date(g?gameDate(g):new Date());d.setMinutes(d.getMinutes()-d.getTimezoneOffset());$('gameDate').value=d.toISOString().slice(0,16);if(g){parseArr(g.winners).forEach(v=>{const p=findPlayer(v);if(p)winSel.push(p.id)});parseArr(g.losers).forEach(v=>{const p=findPlayer(v);if(p)loseSel.push(p.id)})}renderPickers();window.scrollTo({top:$('gamePanel').offsetTop,behavior:'smooth'})}
+$('saveGame').onclick=async()=>{const d=new Date($('gameDate').value);if(winSel.length!==2||loseSel.length!==2||isNaN(d))return;const names=a=>a.map(id=>displayName(players.find(p=>p.id===id)));const data={winners:names(winSel),losers:names(loseSel),played_at:d.toISOString(),week_id:weekId(d)};try{const q=editingId?await db.from('games').update(data).eq('id',editingId):await db.from('games').insert(data);if(q.error)throw q.error;$('gamePanel').style.display='none';const g=await db.from('games').select('*').order('played_at');games=g.data||[];render();toast('Game saved')}catch(e){console.error(e);toast('Could not save game')}};function renderManage(){if(!admin())return;const r=$('manageGames');r.innerHTML='';const gs=[...games].sort((a,b)=>new Date(gameDate(b))-new Date(gameDate(a)));$('manageEmpty').style.display=gs.length?'none':'block';gs.forEach(g=>{const d=document.createElement('div');d.className='week';d.innerHTML='<strong>'+new Date(gameDate(g)).toLocaleString()+'</strong><div class="muted">W: '+esc(parseArr(g.winners).join(', '))+' · L: '+esc(parseArr(g.losers).join(', '))+'</div>';const e=document.createElement('button');e.className='btn ghost';e.textContent='Edit';e.style.marginTop='8px';e.onclick=()=>openGame(g);const x=document.createElement('button');x.className='btn danger';x.textContent='Delete';x.style.margin='8px 0 0 6px';x.onclick=async()=>{if(!confirm('Delete this game?'))return;const q=await db.from('games').delete().eq('id',g.id);if(q.error){toast('Could not delete');return}games=games.filter(v=>v.id!==g.id);render();toast('Game deleted')};d.appendChild(e);d.appendChild(x);r.appendChild(d)})}
+function showModal(html){$('modalBox').innerHTML=html;$('modal').classList.add('show')}function closeModal(){$('modal').classList.remove('show')}
+function profile(p){const gs=games.filter(g=>vals(g).some(v=>findPlayer(v)?.id===p.id)),w=gs.filter(g=>parseArr(g.winners).some(v=>findPlayer(v)?.id===p.id)).length,a=attendance.filter(x=>x.player_id===p.id&&x.present).length;showModal('<h2>'+esc(displayName(p))+'</h2><p><b>Full name:</b> '+esc(p.full_name||p.name||'')+'<br><b>Nickname:</b> '+esc(displayName(p))+'<br><b>Date joined:</b> '+esc(p.date_joined||'')+'<br><b>Attendance:</b> '+a+' sessions<br><b>Wins:</b> '+w+'<br><b>Games:</b> '+gs.length+'<br><b>Win rate:</b> '+(gs.length?Math.round(w/gs.length*100):0)+'%</p>'+(admin()?'<button id="editProfile" class="btn gold">Edit Profile</button>':'')+'<div class="row" style="margin-top:14px"><button id="closeModal" class="btn ghost">Close</button></div>');$('closeModal').onclick=closeModal;if(admin())$('editProfile').onclick=()=>editProfile(p)}
+function editProfile(p){showModal('<h2>Edit Profile</h2><input id="epFull" class="field" value="'+esc(p.full_name||p.name||'')+'" placeholder="Full name"><input id="epNick" class="field" style="margin-top:8px" value="'+esc(displayName(p))+'" placeholder="Nickname"><input id="epDate" type="date" class="field" style="margin-top:8px" value="'+esc(p.date_joined||'')+'"><div class="row" style="margin-top:12px"><button id="cancelEdit" class="btn ghost">Cancel</button><button id="saveProfile" class="btn gold">Save</button></div>');$('cancelEdit').onclick=()=>profile(p);$('saveProfile').onclick=async()=>{const q=await db.from('players').update({full_name:$('epFull').value.trim(),nickname:$('epNick').value.trim(),date_joined:$('epDate').value}).eq('id',p.id);if(q.error){toast('Could not save profile');return}Object.assign(p,{full_name:$('epFull').value.trim(),nickname:$('epNick').value.trim(),date_joined:$('epDate').value});closeModal();render();toast('Profile saved')}}
+$('addPlayer').onclick=async()=>{const full=$('fullName').value.trim(),nick=$('nickname').value.trim();if(!nick){toast('Add a nickname');return}try{const q=await db.from('players').insert({name:nick,full_name:full||nick,nickname:nick,date_joined:new Date().toISOString().slice(0,10),active:true}).select().single();if(q.error)throw q.error;players.push(q.data);$('fullName').value='';$('nickname').value='';render();toast('Player added ✓')}catch(e){console.error(e);toast('Could not add player')}};
+$('newGame').onclick=()=>openGame();$('newOldGame').onclick=()=>openGame();$('cancelGame').onclick=()=>{$('gamePanel').style.display='none';editingId=null};$('saveAttendance').onclick=saveAttendance;$('attDate').onchange=renderAttendance;
+$('adminLogin').onclick=()=>showModal('<h2>Admin Login</h2><input id="loginEmail" type="email" class="field" placeholder="Email"><input id="loginPass" type="password" class="field" style="margin-top:8px" placeholder="Password"><div class="row" style="margin-top:12px"><button id="cancelLogin" class="btn ghost">Cancel</button><button id="doLogin" class="btn gold">Log In</button></div>');$('adminLogout').onclick=async()=>{await db.auth.signOut();session=null;render();toast('Logged out')};$('modalBox').addEventListener('click',async e=>{if(e.target.id==='cancelLogin'){closeModal();return}if(e.target.id!=='doLogin')return;const q=await db.auth.signInWithPassword({email:$('loginEmail').value,password:$('loginPass').value});if(q.error||q.data.user?.id!==ADMIN){toast(q.error?.message||'Not the admin account');return}session=q.data.session;closeModal();render();toast('Admin mode on ✓')});$('modal').onclick=e=>{if(e.target=== $('modal'))closeModal()};
+async function init(){const s=await db.auth.getSession();session=s.data.session;renderAdmin();await load();updateCountdown();setInterval(updateCountdown,1000)}
+const blackout=new Set(['2026-08-27']);function nextGame(){let d=new Date();for(let i=0;i<28;i++){const day=d.getDay(),delta=(4-day+7)%7,c=new Date(d);c.setDate(d.getDate()+delta);c.setHours(18,0,0,0);const key=c.toISOString().slice(0,10),end=new Date(c);end.setHours(20,0,0,0);if(blackout.has(key)){d=new Date(c);d.setDate(d.getDate()+1);continue}if(d<c)return{start:c,end};if(d<end)return{start:c,end};d=new Date(d);d.setDate(d.getDate()+1)}return null}function updateCountdown(){const now=new Date(),g=nextGame();if(!g)return;if(now>=g.start&&now<g.end){$('nextGameTitle').textContent='Game happening now';$('countdown').textContent='Ends at 8:00 PM · '+left(g.end-now)}else{$('nextGameTitle').textContent='Next game: '+g.start.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});$('countdown').textContent='6–8 PM · starts in '+left(g.start-now)}}function left(ms){const s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);if(d)return d+'d '+h+'h '+m+'m';if(h)return h+'h '+m+'m';return m+'m'}
+init();
+</script></body></html>
