@@ -1,0 +1,38 @@
+name: One-time reconcile game records position
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move today's game records above the live podium
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('worker.js')
+          s=p.read_text()
+          marker='/* LB_GAME_RECORDS_TOP_V1 */'
+          if marker in s:
+              raise SystemExit(0)
+          old="host.insertAdjacentElement('afterend',box)"
+          new="host.insertAdjacentElement('beforebegin',box)"
+          if old not in s:
+              raise SystemExit('Expected game-record placement was not found; refusing to modify.')
+          s=s.replace(old,new,1)
+          s=s.replace('<script>','<script>\n'+marker,1)
+          p.write_text(s)
+      - name: Commit only this reconciliation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- worker.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Put today game records back above live podium'
+          git push
