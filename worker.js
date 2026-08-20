@@ -8,35 +8,41 @@ export default {
 <style>
 #roster,#rosterEmpty{display:none!important}
 #profiles{grid-template-columns:1fr 1fr!important}
-@media(max-width:430px){#profiles{grid-template-columns:1fr 1fr!important}}
 #attDate,#saveAttendance,#attGrid{display:none!important}
 </style>
 <script>
 (function(){
 'use strict';
-const U='https://zcahhfswtdrdmguppqtp.supabase.co',K='sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs',A='a517d9bd-bc9c-4e59-b36d-503747621aa4';
-function install(){
- const box=document.getElementById('modalBox'); if(!box)return;
- const pin=document.getElementById('pin'),save=document.getElementById('saveProfile');
- if(pin&&save&&!box.dataset.pinFixed){
-  const labels=[...box.querySelectorAll('label')]; const lab=labels.find(x=>/PIN/i.test(x.textContent||'')); if(lab)lab.remove(); pin.remove();
-  box.dataset.pinFixed='1';
-  save.onclick=async()=>{
-   const db=window.supabase.createClient(U,K); const s=await db.auth.getSession();
-   if(!s.data?.session||s.data.session.user?.id!==A)return alert('Only the admin can change profile information.');
-   const nick=document.getElementById('editNick')?.value.trim()||'',file=document.getElementById('photo')?.files?.[0];
-   const ps=await db.from('players').select('*').order('created_at',{ascending:true}); if(ps.error)return alert(ps.error.message);
-   const text=box.textContent||''; const p=(ps.data||[]).find(x=>text.includes(x.nickname||x.name)); if(!p)return alert('Could not identify this player.');
-   save.disabled=true;save.textContent='Saving…';let url=p.avatar_url||'';
-   if(file){if(!file.type.startsWith('image/')){save.disabled=false;save.textContent='Save';return alert('Please choose an image.')}if(file.size>5*1024*1024){save.disabled=false;save.textContent='Save';return alert('Photo must be under 5 MB.')}const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':file.type==='image/gif'?'gif':'jpg';const path=p.id+'/'+Date.now()+'.'+ext;const up=await db.storage.from('profile-avatars').upload(path,file,{upsert:true,contentType:file.type});if(up.error){save.disabled=false;save.textContent='Save';return alert('Could not upload photo: '+up.error.message)}url=U+'/storage/v1/object/public/profile-avatars/'+path}
-   const q=await db.from('players').update({nickname:nick||p.name,avatar_url:url}).eq('id',p.id);if(q.error){save.disabled=false;save.textContent='Save';return alert('Could not save profile: '+q.error.message)}location.reload();
-  };
- }
+function restoreAdminUI(){
  const admin=document.getElementById('adminPanel');
- if(admin){['attDate','saveAttendance','attGrid'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove()});}
+ if(!admin || document.getElementById('restoredAdminTools')) return;
+ const box=document.createElement('div');
+ box.id='restoredAdminTools';
+ box.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid rgba(250,246,237,.14)';
+ box.innerHTML=`<div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#E8C978;margin-bottom:9px">Admin Tools</div>
+ <div class="row"><button id="showProfilesAdmin" type="button" class="btn gold">Add / Change Profile Photo</button><button id="showDeleteGameAdmin" type="button" class="btn danger">Delete Accidental Game</button><button id="showDeleteProfileAdmin" type="button" class="btn danger">Delete Profile</button></div>
+ <div id="adminToolStatus" class="muted" style="margin-top:8px"></div>`;
+ admin.appendChild(box);
+ document.getElementById('showProfilesAdmin').onclick=()=>{
+   const profiles=document.getElementById('profiles');
+   if(profiles){profiles.scrollIntoView({behavior:'smooth'});document.getElementById('adminToolStatus').textContent='Tap the player profile you want to edit, then choose their photo.'}
+ };
+ document.getElementById('showDeleteGameAdmin').onclick=()=>{
+   const panel=document.getElementById('managePanel');
+   if(panel){panel.classList.remove('hidden');panel.scrollIntoView({behavior:'smooth'});document.getElementById('adminToolStatus').textContent='Game management is now open below. Select the accidental game and delete it.'}
+ };
+ document.getElementById('showDeleteProfileAdmin').onclick=()=>{
+   const profiles=document.getElementById('profiles');
+   if(profiles){profiles.scrollIntoView({behavior:'smooth'});document.getElementById('adminToolStatus').textContent='Open the player profile you want to remove. Admin profile management is available there.'}
+ };
 }
-function watch(){install();const m=document.getElementById('modal');if(m&&!m.dataset.pinWatcher){m.dataset.pinWatcher='1';new MutationObserver(install).observe(m,{childList:true,subtree:true)}}}
-let n=0;const t=setInterval(()=>{watch();if(++n>80)clearInterval(t)},250);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);else watch();
+function cleanProfileModal(){
+ const box=document.getElementById('modalBox');if(!box)return;
+ const pin=document.getElementById('pin');if(pin){const p=pin.closest('div');if(p)p.remove();else pin.remove()}
+ [...box.querySelectorAll('label')].filter(x=>/pin/i.test(x.textContent||'')).forEach(x=>x.remove());
+}
+function run(){cleanProfileModal();restoreAdminUI();const manage=document.getElementById('managePanel');const admin=document.getElementById('adminPanel');if(admin&& !admin.classList.contains('hidden') && manage) manage.classList.remove('hidden')}
+let n=0;const timer=setInterval(()=>{run();if(++n>160)clearInterval(timer)},250);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
 })();
 </script>`;
     const body=html.includes('</body>')?html.replace('</body>',injection+'</body>'):html+injection;
