@@ -1,0 +1,1 @@
+Trigger automatic Cloudflare deployment for the current main branch.
