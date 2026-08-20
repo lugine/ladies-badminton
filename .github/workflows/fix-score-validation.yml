@@ -1,0 +1,43 @@
+name: Fix badminton score validation
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix singles score validation without changing other features
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('worker.js')
+          s = p.read_text()
+          old1 = "if(ws<22&&ls!==ws-2)return alert('You must win by 2 points.');"
+          new1 = "if(ws<30&&ws-ls<2)return alert('Winner must lead by at least 2 points.');"
+          old2 = "if(ws<30&&ws-ls!==2)return alert('You must win by 2 points.');"
+          new2 = "if(ws<30&&ws-ls<2)return alert('Winner must lead by at least 2 points.');"
+          changed = False
+          if old1 in s:
+              s = s.replace(old1, new1)
+              changed = True
+          if old2 in s:
+              s = s.replace(old2, new2)
+              changed = True
+          if not changed:
+              print('Score validation already fixed or pattern not present; refusing to modify anything.')
+              raise SystemExit(0)
+          p.write_text(s)
+      - name: Commit only if worker changed
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- worker.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Fix singles score validation'
+          git push
