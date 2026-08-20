@@ -19,9 +19,9 @@ function restoreAdminUI(){
  const box=document.createElement('div');
  box.id='restoredAdminTools';
  box.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid rgba(250,246,237,.14)';
- box.innerHTML=`<div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#E8C978;margin-bottom:9px">Admin Tools</div>
- <div class="row"><button id="showProfilesAdmin" type="button" class="btn gold">Add / Change Profile Photo</button><button id="showDeleteGameAdmin" type="button" class="btn danger">Delete Accidental Game</button><button id="showDeleteProfileAdmin" type="button" class="btn danger">Delete Profile</button></div>
- <div id="adminToolStatus" class="muted" style="margin-top:8px"></div>`;
+ box.innerHTML='<div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#E8C978;margin-bottom:9px">Admin Tools</div>'+
+   '<div class="row"><button id="showProfilesAdmin" type="button" class="btn gold">Add / Change Profile Photo</button><button id="showDeleteGameAdmin" type="button" class="btn danger">Delete Accidental Game</button><button id="showDeleteProfileAdmin" type="button" class="btn danger">Delete Profile</button></div>'+
+   '<div id="adminToolStatus" class="muted" style="margin-top:8px"></div>';
  admin.appendChild(box);
  document.getElementById('showProfilesAdmin').onclick=()=>{
    const profiles=document.getElementById('profiles');
@@ -41,7 +41,7 @@ function cleanProfileModal(){
  const pin=document.getElementById('pin');if(pin){const p=pin.closest('div');if(p)p.remove();else pin.remove()}
  [...box.querySelectorAll('label')].filter(x=>/pin/i.test(x.textContent||'')).forEach(x=>x.remove());
 }
-function run(){cleanProfileModal();restoreAdminUI();const manage=document.getElementById('managePanel');const admin=document.getElementById('adminPanel');if(admin&& !admin.classList.contains('hidden') && manage) manage.classList.remove('hidden')}
+function run(){cleanProfileModal();restoreAdminUI();const manage=document.getElementById('managePanel');const admin=document.getElementById('adminPanel');if(admin&&!admin.classList.contains('hidden')&&manage)manage.classList.remove('hidden')}
 let n=0;const timer=setInterval(()=>{run();if(++n>160)clearInterval(timer)},250);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
 })();
 </script>`;
