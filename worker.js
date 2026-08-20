@@ -9,100 +9,115 @@ export default {
         element(element) {
           element.append(`<script>
 (function(){
+  var SUPABASE_URL='https://zcahhfswtdrdmguppqtp.supabase.co';
+  var SUPABASE_KEY='sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs';
+  var ADMIN_ID='a517d9bd-bc9c-4e59-b36d-503747621aa4';
+  var db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
   function cleanPublicError(){
     try {
       document.querySelectorAll('div').forEach(function(el){
         var text=(el.textContent||'').trim().toLowerCase();
-        if(text === 'could not load the database' || text === "database couldn't be loaded" || text.indexOf("couldn't load the database") !== -1){
-          el.remove();
-        }
+        if(text.indexOf("couldn't load the database")!==-1 || text==='could not load the database') el.remove();
       });
     } catch(e) {}
   }
 
   function setDateAndSchedule(){
-    try {
-      var now=new Date();
-      var date=document.getElementById('date');
+    try{
+      var now=new Date(),date=document.getElementById('date');
       if(date) date.textContent=now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-      var blackouts={'2026-08-27':true},target=null,active=false;
+      var blackout={'2026-08-27':true},target=null,active=false;
       for(var i=0;i<30;i++){
-        var d=new Date(now); d.setDate(d.getDate()+i);
-        if(d.getDay()!==4) continue;
+        var d=new Date(now);d.setDate(d.getDate()+i);if(d.getDay()!==4)continue;
         var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-        if(blackouts[key]) continue;
-        var start=new Date(d); start.setHours(18,0,0,0);
-        var end=new Date(d); end.setHours(20,0,0,0);
+        if(blackout[key])continue;
+        var start=new Date(d);start.setHours(18,0,0,0);var end=new Date(d);end.setHours(20,0,0,0);
         if(now<end){target={start:start,end:end};active=now>=start;break;}
       }
-      if(!target) return;
-      var title=document.getElementById('nextTitle');
-      var meta=document.getElementById('nextMeta');
-      var countdown=document.getElementById('countdown');
-      if(title) title.textContent=active?'Game happening now':(target.start.toDateString()===now.toDateString()?'Today':target.start.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+' · 6–8 PM';
-      if(meta) meta.textContent=active?'Ends at 8:00 PM':'Thursday session';
-      if(countdown){var sec=Math.max(0,Math.floor(((active?target.end:target.start)-now)/1000));var days=Math.floor(sec/86400);sec%=86400;var h=Math.floor(sec/3600);sec%=3600;var m=Math.floor(sec/60),s=sec%60;countdown.textContent=active?'Ends in '+h+'h '+m+'m '+s+'s':'Starts in '+(days?days+'d ':'')+h+'h '+m+'m '+s+'s';}
-    } catch(e) {}
+      if(!target)return;
+      var title=document.getElementById('nextTitle'),meta=document.getElementById('nextMeta'),count=document.getElementById('countdown');
+      if(title)title.textContent=active?'Game happening now':(target.start.toDateString()===now.toDateString()?'Today':target.start.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'}))+' · 6–8 PM';
+      if(meta)meta.textContent=active?'Ends at 8:00 PM':'Thursday session';
+      if(count){var sec=Math.max(0,Math.floor(((active?target.end:target.start)-now)/1000));var days=Math.floor(sec/86400);sec%=86400;var h=Math.floor(sec/3600);sec%=3600;var m=Math.floor(sec/60),s=sec%60;count.textContent=active?'Ends in '+h+'h '+m+'m '+s+'s':'Starts in '+(days?days+'d ':'')+h+'h '+m+'m '+s+'s';}
+    }catch(e){}
   }
 
-  function setupDuplicateCheck(){
-    try {
-      var button=document.getElementById('addPlayer');
-      if(!button || !window.supabase) return;
-      button.addEventListener('click', async function(event){
-        var first=document.getElementById('firstName');
-        var nick=document.getElementById('nickname');
-        if(!first) return;
-        var name=(nick && nick.value.trim()) || first.value.trim();
-        if(!name) return;
-        var client=window.supabase.createClient('https://zcahhfswtdrdmguppqtp.supabase.co','sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs');
-        var result=await client.from('players').select('id,name,nickname').ilike('name', first.value.trim()).limit(1);
-        var result2=await client.from('players').select('id,name,nickname').or('name.ilike.'+encodeURIComponent(name)+',nickname.ilike.'+encodeURIComponent(name)).limit(1);
-        var found=(result.data&&result.data[0]) || (result2.data&&result2.data[0]);
-        if(found){
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          var t=document.createElement('div');
-          t.textContent='That name is already taken. Please choose another name or contact the admin.';
-          t.style.cssText='position:fixed;z-index:100;bottom:18px;left:50%;transform:translateX(-50%);background:#D4A537;color:#211F1B;font-weight:800;padding:10px 16px;border-radius:20px;max-width:90%;text-align:center';
-          document.body.appendChild(t);
-          setTimeout(function(){t.remove()},3200);
-        }
-      }, true);
-    } catch(e) {}
+  function toast(msg){var t=document.createElement('div');t.textContent=msg;t.style.cssText='position:fixed;z-index:100000;bottom:18px;left:50%;transform:translateX(-50%);background:#D4A537;color:#211F1B;font-weight:800;padding:10px 16px;border-radius:20px;max-width:90%;text-align:center';document.body.appendChild(t);setTimeout(function(){t.remove()},3000);}
+  function esc(v){var d=document.createElement('div');d.textContent=v==null?'':String(v);return d.innerHTML;}
+  function showModal(html){var old=document.getElementById('profileEditModal');if(old)old.remove();var o=document.createElement('div');o.id='profileEditModal';o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif';o.innerHTML='<div style="width:100%;max-width:390px;background:#163A30;border:1px solid rgba(250,246,237,.14);border-radius:14px;padding:20px;color:#FAF6ED;box-sizing:border-box">'+html+'</div>';document.body.appendChild(o);return o;}
+
+  async function getPlayers(){var q=await db.from('players').select('id,name,full_name,nickname,date_joined,avatar_url,active').eq('active',true).order('created_at',{ascending:true});return q.error?[]:(q.data||[]);}
+  function playerName(p){return p.nickname||p.name||'Player';}
+  function avatarMarkup(p,size){var s=size||42;return p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" style="width:'+s+'px;height:'+s+'px;border-radius:50%;object-fit:cover;display:block">':'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:rgba(250,246,237,.12);border:1px solid rgba(250,246,237,.18);display:flex;align-items:center;justify-content:center;font-size:'+Math.max(14,Math.floor(s/3))+'px">○</div>';}
+
+  function addAvatarStyles(){
+    if(document.getElementById('profileExtrasStyles'))return;
+    var st=document.createElement('style');st.id='profileExtrasStyles';st.textContent='.profile-extra-avatar{margin:-28px auto 6px;position:relative;width:56px;height:56px}.profile-edit-btn{margin-top:10px}.podium-wrap{display:flex;align-items:end;justify-content:center;gap:10px;margin:18px 0 8px}.podium-item{flex:1;text-align:center;position:relative}.podium-avatar{margin:0 auto -8px;position:relative;z-index:2}.podium-block{border-radius:10px 10px 0 0;padding:26px 8px 12px;min-height:72px;background:rgba(250,246,237,.08);border:1px solid rgba(250,246,237,.12)}.podium-first .podium-block{min-height:105px;background:rgba(212,165,55,.18)}.podium-second .podium-block{min-height:84px}.podium-third .podium-block{min-height:70px}.podium-trophy{font-size:24px}.podium-name{font-weight:800;font-size:13px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.podium-points{font-size:11px;color:#E8C978;margin-top:3px}';document.head.appendChild(st);
   }
 
-  cleanPublicError();
-  setDateAndSchedule();
-  setupDuplicateCheck();
-  setInterval(cleanPublicError,250);
-  setInterval(setDateAndSchedule,1000);
+  async function installProfileEditing(){
+    try{
+      addAvatarStyles();
+      var ps=await getPlayers();
+      if(!ps.length)return;
+      var boxes=document.querySelectorAll('.profile');
+      boxes.forEach(function(box){
+        if(box.dataset.profileEnhanced==='1')return;
+        var label=(box.querySelector('b')||{}).textContent||'';
+        var p=ps.find(function(x){return playerName(x)===label||x.name===label});
+        if(!p)return;
+        box.dataset.profileEnhanced='1';
+        var avatar=document.createElement('div');avatar.className='profile-extra-avatar';avatar.innerHTML=avatarMarkup(p,56);box.prepend(avatar);
+      });
+      document.querySelectorAll('.lb').forEach(function(row){
+        if(row.dataset.avatarEnhanced==='1')return;
+        var label=(row.querySelector('.name')||{}).childNodes&&row.querySelector('.name').childNodes[0];
+        var name=label?label.textContent.trim():'';
+        var p=ps.find(function(x){return playerName(x)===name||x.name===name});
+        if(!p)return;
+        row.dataset.avatarEnhanced='1';
+        var n=row.querySelector('.name');if(n){var a=document.createElement('span');a.innerHTML=avatarMarkup(p,34);a.style.cssText='display:inline-flex;vertical-align:middle;margin-right:8px';n.prepend(a);}
+      });
+    }catch(e){}
+  }
 
-  function showRecovery(){
-    if (document.getElementById('passwordRecoveryModal')) return;
-    var overlay=document.createElement('div');
-    overlay.id='passwordRecoveryModal';
-    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif;';
-    overlay.innerHTML='<div style="width:100%;max-width:380px;background:#163A30;border:1px solid rgba(250,246,237,.14);border-radius:14px;padding:22px;color:#FAF6ED;box-sizing:border-box;"><h2 style="margin:0 0 8px;font-family:Georgia,serif;">Set a new password</h2><p style="font-size:13px;line-height:1.5;color:rgba(250,246,237,.68);margin:0 0 15px;">Enter your new password below.</p><input id="recoveryPassword" type="password" autocomplete="new-password" placeholder="New password" style="width:100%;box-sizing:border-box;background:#1F4B3F;border:1px solid rgba(250,246,237,.14);border-radius:8px;padding:11px 12px;color:#FAF6ED;font-size:15px;margin-bottom:9px;"><input id="recoveryPassword2" type="password" autocomplete="new-password" placeholder="Confirm password" style="width:100%;box-sizing:border-box;background:#1F4B3F;border:1px solid rgba(250,246,237,.14);border-radius:8px;padding:11px 12px;color:#FAF6ED;font-size:15px;margin-bottom:9px;"><div id="recoveryMessage" style="font-size:12px;color:rgba(250,246,237,.58);min-height:18px;margin-bottom:9px;"></div><button id="recoverySave" style="width:100%;border:0;border-radius:8px;padding:11px 15px;background:#D4A537;color:#211F1B;font-weight:700;font-size:14px;cursor:pointer;">Save new password</button></div>';
-    document.body.appendChild(overlay);
-    document.getElementById('recoverySave').onclick=async function(){
-      var p1=document.getElementById('recoveryPassword').value,p2=document.getElementById('recoveryPassword2').value,msg=document.getElementById('recoveryMessage');
-      if(!p1||p1.length<6){msg.textContent='Use at least 6 characters.';return;}
-      if(p1!==p2){msg.textContent='The passwords do not match.';return;}
-      this.disabled=true;msg.textContent='Saving…';
-      try{var client=window.supabase.createClient('https://zcahhfswtdrdmguppqtp.supabase.co','sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs');var result=await client.auth.updateUser({password:p1});if(result.error)throw result.error;msg.textContent='Password updated ✓';setTimeout(function(){window.history.replaceState({},document.title,window.location.pathname);overlay.remove();},900);}catch(e){this.disabled=false;msg.textContent=e.message||'Could not update the password.';}
+  function addEditButtonToProfileModal(){
+    try{
+      var box=document.getElementById('modalBox');if(!box||box.dataset.editHook==='1')return;
+      var text=box.textContent||'';if(text.indexOf('Full name:')===-1)return;
+      var fullMatch=text.match(/Full name:\s*([^\n]+?)(?:Nickname:|Date joined:)/);var nicknameMatch=text.match(/Nickname:\s*([^\n]+?)(?:Date joined:|Attendance:)/);
+      var full=(fullMatch&&fullMatch[1]||'').trim(),shown=(nicknameMatch&&nicknameMatch[1]||'').trim();
+      db.from('players').select('id,name,full_name,nickname,date_joined,avatar_url,profile_pin').or('name.eq.'+encodeURIComponent(full)+',nickname.eq.'+encodeURIComponent(shown)).limit(1).then(function(q){
+        var p=q.data&&q.data[0];if(!p)return;
+        var old=box.querySelector('[data-profile-edit]');if(old)return;
+        var b=document.createElement('button');b.type='button';b.dataset.profileEdit='1';b.className='btn gold profile-edit-btn';b.textContent='Edit my profile';b.onclick=function(){editProfile(p)};
+        var anchor=box.querySelector('#closeProfile');if(anchor)anchor.parentNode.insertBefore(b,anchor);else box.appendChild(b);
+      });
+    }catch(e){}
+  }
+
+  function editProfile(p){
+    var modal=showModal('<h2 style="margin-top:0;font-family:Georgia,serif">Edit your profile</h2><p style="font-size:13px;line-height:1.5;color:rgba(250,246,237,.65)">You can change your nickname and profile photo. Your real name, join date, scores and attendance stay locked.</p><label style="font-size:12px;display:block;margin:10px 0 6px">Profile PIN</label><input id="pePin" type="password" inputmode="numeric" maxlength="6" class="field" placeholder="6-digit PIN"><label style="font-size:12px;display:block;margin:10px 0 6px">Nickname</label><input id="peNick" maxlength="30" class="field" placeholder="Nickname"><label style="font-size:12px;display:block;margin:10px 0 6px">Profile picture</label><input id="pePhoto" type="file" accept="image/*" class="field"><img id="pePreview" style="width:72px;height:72px;border-radius:50%;object-fit:cover;margin:10px 0;display:block" src="'+(p.avatar_url||'')+'"><div class="row" style="margin-top:10px"><button id="peCancel" type="button" class="btn ghost">Cancel</button><button id="peSave" type="button" class="btn gold">Save</button></div>');
+    modal.querySelector('#peNick').value=p.nickname||'';
+    modal.querySelector('#pePhoto').onchange=function(){var f=this.files&&this.files[0];if(f){var u=URL.createObjectURL(f);modal.querySelector('#pePreview').src=u;}};
+    modal.querySelector('#peCancel').onclick=function(){modal.remove();};
+    modal.querySelector('#peSave').onclick=async function(){
+      var pin=modal.querySelector('#pePin').value.trim(),nick=modal.querySelector('#peNick').value.trim(),file=modal.querySelector('#pePhoto').files&&modal.querySelector('#pePhoto').files[0],url=p.avatar_url||'';
+      if(!/^\\d{6}$/.test(pin)){toast('Enter your 6-digit profile PIN');return;}
+      if(file){if(file.size>5*1024*1024){toast('Photo must be under 5 MB');return;}var ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');var path=p.id+'/'+Date.now()+'.'+(ext||'jpg');var up=await db.storage.from('profile-avatars').upload(path,file,{upsert:true,contentType:file.type||'image/jpeg'});if(up.error){toast('Could not upload photo');return;}url=SUPABASE_URL+'/storage/v1/object/public/profile-avatars/'+path;}
+      var q=await db.rpc('update_player_profile',{p_player_id:p.id,p_pin:pin,p_nickname:nick,p_avatar_url:url});
+      if(q.error){toast('Could not save profile');return;}if(q.data!==true){toast('Wrong profile PIN');return;}toast('Profile updated ✓');modal.remove();setTimeout(function(){location.reload();},250);
     };
   }
 
-  function startRecovery(){
-    try {
-      var hash=new URLSearchParams(window.location.hash.replace(/^#/,''));
-      if(hash.get('type')==='recovery') setTimeout(showRecovery,150);
-      var client=window.supabase.createClient('https://zcahhfswtdrdmguppqtp.supabase.co','sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs');
-      client.auth.onAuthStateChange(function(event){if(event==='PASSWORD_RECOVERY') showRecovery();});
-    } catch(e) {}
+  function startEnhancements(){
+    cleanPublicError();setDateAndSchedule();installProfileEditing();addEditButtonToProfileModal();
+    setInterval(cleanPublicError,500);setInterval(setDateAndSchedule,1000);setInterval(installProfileEditing,1200);setInterval(addEditButtonToProfileModal,500);
   }
-  startRecovery();
+
+  window.addEventListener('load',function(){setTimeout(startEnhancements,600);});
+  addAvatarStyles();
 })();
 </script>`, { html: true });
         }
