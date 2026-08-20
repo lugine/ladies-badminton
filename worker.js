@@ -41,21 +41,25 @@ export default {
 <script>
 (() => {
   const originalError = window.console?.error;
-  window.addEventListener('unhandledrejection', (event) => {
-    if (event.reason) console.error('Ladies Badminton error:', event.reason);
-  });
-  window.addEventListener('error', (event) => {
-    if (originalError) originalError.call(console, event.error || event.message);
-  });
+  const SUPABASE_URL = 'https://zcahhfswtdrdmguppqtp.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs';
+  const ADMIN_ID = 'a517d9bd-bc9c-4e59-b36d-503747621aa4';
+  const supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const safe = (v) => { const d = document.createElement('div'); d.textContent = v ?? ''; return d.innerHTML; };
+  const notice = (msg) => { const t = document.createElement('div'); t.textContent = msg; t.style.cssText = 'position:fixed;z-index:100;bottom:18px;left:50%;transform:translateX(-50%);background:#D4A537;color:#211F1B;font-weight:700;padding:10px 16px;border-radius:20px;max-width:90%;text-align:center'; document.body.appendChild(t); setTimeout(() => t.remove(), 2400); };
+  window.addEventListener('unhandledrejection', (event) => { if (event.reason && originalError) originalError.call(console, event.reason); });
+  window.addEventListener('error', (event) => { if (originalError) originalError.call(console, event.error || event.message); });
 
   window.addEventListener('load', () => {
     const btn = document.getElementById('showPins');
-    if (!btn) return;
+    if (!btn || !supabaseClient) return;
     btn.onclick = async () => {
+      const auth = await supabaseClient.auth.getSession();
+      if (auth.data?.session?.user?.id !== ADMIN_ID) return notice('Admin access required');
       const box = document.getElementById('pinsBox');
-      const { data, error } = await db.from('players').select('name,nickname,profile_pin').order('name');
-      if (error) return toast('Could not load profile PINs');
-      box.innerHTML = '<div class="rules"><b>Profile PINs</b><div class="muted" style="margin-top:6px">Give each player only their own PIN.</div>' + (data || []).map(p => '<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--dim)"><span>' + esc(p.nickname || p.name) + '</span><strong style="color:var(--gold);letter-spacing:.12em">' + esc(p.profile_pin) + '</strong></div>').join('') + '</div>';
+      const { data, error } = await supabaseClient.from('players').select('name,nickname,profile_pin').order('name');
+      if (error) return notice('Could not load profile PINs');
+      box.innerHTML = '<div class="rules"><b>Profile PINs</b><div class="muted" style="margin-top:6px">Give each player only their own PIN.</div>' + (data || []).map(p => '<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--dim)"><span>' + safe(p.nickname || p.name) + '</span><strong style="color:var(--gold);letter-spacing:.12em">' + safe(p.profile_pin) + '</strong></div>').join('') + '</div>';
       box.classList.remove('hidden');
     };
   });
