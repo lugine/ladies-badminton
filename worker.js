@@ -19,7 +19,7 @@ export default {
 .today-team{font-weight:800;line-height:1.35;overflow-wrap:anywhere}
 .today-team.right{text-align:right}
 .today-score{font-size:21px;font-weight:900;color:#D4A537;white-space:nowrap}
-.today-winner{font-size:10px;color:#E8C978;margin-top:8px;font-weight:800}
+.today-winner{font-size:10px;color:#E8C978;margin-top:8px;font-weight:800}.today-team-avatars{display:flex;gap:4px;margin-bottom:6px}.today-team.right .today-team-avatars{justify-content:flex-end}.today-team-avatars img,.today-team-avatars .blank{width:26px;height:26px;border-radius:50%;object-fit:cover;background:rgba(250,246,237,.12);border:1px solid rgba(212,165,55,.4);display:inline-block}
 @media(max-width:430px){.today-game-teams{gap:7px}.today-score{font-size:18px}.today-game{padding:12px 10px}}</style>
 <script>
 /* LB_GAME_RECORDS_TOP_V1 */
@@ -30,34 +30,180 @@ const K='sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs';
 const A='a517d9bd-bc9c-4e59-b36d-503747621aa4';
 const db=window.supabase.createClient(U,K);
 const $=id=>document.getElementById(id);
-const esc=v=>{const d=document.createElement('div');d.textContent=v??'';return d.innerHTML};
+const esc=v=>{const d=document.createElement('div');d.textContent=v??'';return d.innerHTML};const dn=p=>{if(!p)return '';const fn=(p.full_name||p.name||'Player').trim();const parts=fn.split(/\s+/);return parts.length>1?parts[0]+' '+parts[1][0]+'.':parts[0];};
 let installed=false,historyInstalled=false,gameRecordsLast=0;
 function close(){const x=$('lbAdminModal');if(x)x.remove()}
 function modal(html){let x=$('lbAdminModal');if(!x){x=document.createElement('div');x.id='lbAdminModal';x.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px';document.body.appendChild(x)}x.innerHTML='<div style="width:100%;max-width:560px;max-height:90vh;overflow:auto;background:#163A30;border:1px solid rgba(250,246,237,.16);border-radius:14px;padding:20px;color:#FAF6ED">'+html+'</div>';return x}
 async function admin(){const r=await db.auth.getSession();return r.data?.session?.user?.id===A}
 function removePins(){const b=$('modalBox');if(!b)return;[...b.querySelectorAll('input,select,textarea,label')].filter(x=>/pin/i.test((x.id||'')+' '+(x.name||'')+' '+(x.placeholder||'')+' '+(x.textContent||''))).forEach(x=>x.remove())}
-async function photo(){if(!await admin())return alert('Admin login required.');const r=await db.from('players').select('id,name,nickname').order('name');if(r.error)return alert(r.error.message);const opts=(r.data||[]).map(p=>'<option value="'+esc(p.id)+'">'+esc(p.nickname||p.name)+'</option>').join('');modal('<h2 style="margin-top:0">Add / Change Profile Photo</h2><div class="muted">Admin only · images up to 5 MB.</div><select id="apPlayer" class="field" style="width:100%;margin:10px 0">'+opts+'</select><input id="apFile" class="field" type="file" accept="image/*" style="width:100%"><div style="margin-top:14px"><button id="apSave" class="btn gold">Upload Photo</button><button id="apClose" class="btn ghost" style="margin-left:6px">Cancel</button></div>');$('apClose').onclick=close;$('apSave').onclick=async()=>{const f=$('apFile').files?.[0],id=$('apPlayer').value;if(!f)return alert('Choose a player and photo.');if(!f.type.startsWith('image/'))return alert('Please choose an image.');if(f.size>5*1024*1024)return alert('Photo must be under 5 MB.');const b=$('apSave');b.disabled=true;b.textContent='Uploading…';const ext=(f.type.split('/')[1]||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg';const path=id+'/'+Date.now()+'.'+ext;const up=await db.storage.from('profile-avatars').upload(path,f,{upsert:true,contentType:f.type});if(up.error){b.disabled=false;b.textContent='Upload Photo';return alert('Could not upload photo: '+up.error.message)}const url=db.storage.from('profile-avatars').getPublicUrl(path).data.publicUrl;const q=await db.from('players').update({avatar_url:url}).eq('id',id);if(q.error){b.disabled=false;b.textContent='Upload Photo';return alert('Could not save photo: '+q.error.message)}close();location.reload()}}
+async function photo(){if(!await admin())return alert('Admin login required.');const r=await db.from('players').select('id,name,nickname').order('name');if(r.error)return alert(r.error.message);const opts=(r.data||[]).map(p=>'<option value="'+esc(p.id)+'">'+esc(dn(p))+'</option>').join('');modal('<h2 style="margin-top:0">Add / Change Profile Photo</h2><div class="muted">Admin only · images up to 5 MB.</div><select id="apPlayer" class="field" style="width:100%;margin:10px 0">'+opts+'</select><input id="apFile" class="field" type="file" accept="image/*" style="width:100%"><div style="margin-top:14px"><button id="apSave" class="btn gold">Upload Photo</button><button id="apClose" class="btn ghost" style="margin-left:6px">Cancel</button></div>');$('apClose').onclick=close;$('apSave').onclick=async()=>{const f=$('apFile').files?.[0],id=$('apPlayer').value;if(!f)return alert('Choose a player and photo.');if(!f.type.startsWith('image/'))return alert('Please choose an image.');if(f.size>5*1024*1024)return alert('Photo must be under 5 MB.');const b=$('apSave');b.disabled=true;b.textContent='Uploading…';const ext=(f.type.split('/')[1]||'jpg').replace(/[^a-z0-9]/gi,'')||'jpg';const path=id+'/'+Date.now()+'.'+ext;const up=await db.storage.from('profile-avatars').upload(path,f,{upsert:true,contentType:f.type});if(up.error){b.disabled=false;b.textContent='Upload Photo';return alert('Could not upload photo: '+up.error.message)}const url=db.storage.from('profile-avatars').getPublicUrl(path).data.publicUrl;const q=await db.from('players').update({avatar_url:url}).eq('id',id);if(q.error){b.disabled=false;b.textContent='Upload Photo';return alert('Could not save photo: '+q.error.message)}close();location.reload()}}
 async function deleteGame(){if(!await admin())return alert('Admin login required.');const r=await db.from('games').select('id,played_at,winner_score,loser_score').order('played_at',{ascending:false});if(r.error)return alert(r.error.message);const opts=(r.data||[]).map(g=>'<option value="'+esc(g.id)+'">'+esc(g.played_at?new Date(g.played_at).toLocaleString():'Game')+' · '+esc((g.winner_score??'—')+'–'+(g.loser_score??'—'))+'</option>').join('');modal('<h2 style="margin-top:0">Delete Accidental Game</h2><select id="agGame" class="field" style="width:100%;margin:10px 0">'+opts+'</select><button id="agDelete" class="btn danger">Delete Game</button><button id="agClose" class="btn ghost" style="margin-left:6px">Cancel</button>');$('agClose').onclick=close;$('agDelete').onclick=async()=>{const id=$('agGame').value;if(!id||!confirm('Delete this game permanently?'))return;const b=$('agDelete');b.disabled=true;b.textContent='Deleting…';const q=await db.from('games').delete().eq('id',id);if(q.error){b.disabled=false;b.textContent='Delete Game';return alert('Could not delete game: '+q.error.message)}close();location.reload()}}
-async function deleteProfile(){if(!await admin())return alert('Admin login required.');const r=await db.from('players').select('id,name,nickname').order('name');if(r.error)return alert(r.error.message);const opts=(r.data||[]).map(p=>'<option value="'+esc(p.id)+'">'+esc(p.nickname||p.name)+'</option>').join('');modal('<h2 style="margin-top:0">Delete Profile</h2><select id="adPlayer" class="field" style="width:100%;margin:10px 0">'+opts+'</select><button id="adDelete" class="btn danger">Delete Profile</button><button id="adClose" class="btn ghost" style="margin-left:6px">Cancel</button>');$('adClose').onclick=close;$('adDelete').onclick=async()=>{const id=$('adPlayer').value,label=$('adPlayer').selectedOptions[0]?.textContent||'this player';if(!id||!confirm('Delete '+label+' permanently?'))return;const b=$('adDelete');b.disabled=true;b.textContent='Deleting…';const q=await db.rpc('admin_delete_player',{p_player_id:id});if(q.error){b.disabled=false;b.textContent='Delete Profile';return alert('Could not delete profile: '+q.error.message)}close();location.reload()}}
-async function pastPoints(){if(!await admin())return alert('Admin login required.');const p=await db.from('players').select('id,name,nickname,full_name,active').order('name');if(p.error)return alert('Could not load players: '+p.error.message);modal('<h2 style="margin-top:0">Add / Edit Past Points</h2><div class="muted">Choose a date. Existing points for that date load automatically. Enter 0 for a player with no points.</div><div class="row" style="margin-top:10px"><input id="ppDate" type="date" class="field"><button id="ppLoad" class="btn ghost">Load</button></div><div id="ppRows" style="margin-top:12px"></div><div id="ppStatus" class="muted" style="margin-top:8px"></div><div style="margin-top:14px"><button id="ppSave" class="btn gold" disabled>Save Past Points</button><button id="ppClose" class="btn ghost" style="margin-left:6px">Cancel</button></div>');const date=$('ppDate'),rows=$('ppRows'),status=$('ppStatus'),save=$('ppSave');$('ppClose').onclick=close;const load=async()=>{const d=date.value;if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(d))return status.textContent='Choose a valid date.';status.textContent='Loading…';const old=await db.from('past_points').select('player_id,points').eq('session_date',d);if(old.error)return status.textContent='Could not load points: '+old.error.message;const by=new Map((old.data||[]).map(x=>[x.player_id,Number(x.points)||0]));rows.innerHTML='';(p.data||[]).filter(x=>x.active!==false).forEach(x=>{const row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 95px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(250,246,237,.14)';row.innerHTML='<div><strong>'+esc(x.nickname||x.name)+'</strong><div class="muted">'+esc(x.full_name||x.name||'')+'</div></div>';const i=document.createElement('input');i.type='number';i.min='0';i.max='99';i.step='1';i.className='field';i.dataset.player=x.id;i.value=String(by.get(x.id)||0);row.appendChild(i);rows.appendChild(row)});save.disabled=false;status.textContent=old.data?.length?'Existing points loaded — edit and save.':'No points for this date yet.'};$('ppLoad').onclick=load;date.onchange=load;save.onclick=async()=>{const d=date.value;if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(d))return status.textContent='Choose a valid date.';const vals=[...rows.querySelectorAll('input[data-player]')].map(i=>({player_id:i.dataset.player,points:Math.max(0,Math.min(99,Number(i.value)||0))}));save.disabled=true;save.textContent='Saving…';const q=await db.rpc('admin_set_past_points',{p_session_date:d,p_entries:vals});if(q.error){save.disabled=false;save.textContent='Save Past Points';return status.textContent='Could not save past points: '+q.error.message}status.textContent='Saved successfully ✓';save.textContent='Saved ✓';setTimeout(()=>{close();location.reload()},600)};date.value=new Date().toISOString().slice(0,10);await load()}
+async function deleteProfile(){if(!await admin())return alert('Admin login required.');const r=await db.from('players').select('id,name,nickname').order('name');if(r.error)return alert(r.error.message);const opts=(r.data||[]).map(p=>'<option value="'+esc(p.id)+'">'+esc(dn(p))+'</option>').join('');modal('<h2 style="margin-top:0">Delete Profile</h2><select id="adPlayer" class="field" style="width:100%;margin:10px 0">'+opts+'</select><button id="adDelete" class="btn danger">Delete Profile</button><button id="adClose" class="btn ghost" style="margin-left:6px">Cancel</button>');$('adClose').onclick=close;$('adDelete').onclick=async()=>{const id=$('adPlayer').value,label=$('adPlayer').selectedOptions[0]?.textContent||'this player';if(!id||!confirm('Delete '+label+' permanently?'))return;const b=$('adDelete');b.disabled=true;b.textContent='Deleting…';const q=await db.rpc('admin_delete_player',{p_player_id:id});if(q.error){b.disabled=false;b.textContent='Delete Profile';return alert('Could not delete profile: '+q.error.message)}close();location.reload()}}
+async function pastPoints(){if(!await admin())return alert('Admin login required.');const p=await db.from('players').select('id,name,nickname,full_name,active').order('name');if(p.error)return alert('Could not load players: '+p.error.message);modal('<h2 style="margin-top:0">Add / Edit Past Points</h2><div class="muted">Choose a date. Existing points for that date load automatically. Enter 0 for a player with no points.</div><div class="row" style="margin-top:10px"><input id="ppDate" type="date" class="field"><button id="ppLoad" class="btn ghost">Load</button></div><div id="ppRows" style="margin-top:12px"></div><div id="ppStatus" class="muted" style="margin-top:8px"></div><div style="margin-top:14px"><button id="ppSave" class="btn gold" disabled>Save Past Points</button><button id="ppClose" class="btn ghost" style="margin-left:6px">Cancel</button></div>');const date=$('ppDate'),rows=$('ppRows'),status=$('ppStatus'),save=$('ppSave');$('ppClose').onclick=close;const load=async()=>{const d=date.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return status.textContent='Choose a valid date.';status.textContent='Loading…';const old=await db.from('past_points').select('player_id,points').eq('session_date',d);if(old.error)return status.textContent='Could not load points: '+old.error.message;const by=new Map((old.data||[]).map(x=>[x.player_id,Number(x.points)||0]));rows.innerHTML='';(p.data||[]).filter(x=>x.active!==false).forEach(x=>{const row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 95px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(250,246,237,.14)';row.innerHTML='<div><strong>'+esc(dn(x))+'</strong><div class="muted">'+esc(x.full_name||x.name||'')+'</div></div>';const i=document.createElement('input');i.type='number';i.min='0';i.max='99';i.step='1';i.className='field';i.dataset.player=x.id;i.value=String(by.get(x.id)||0);row.appendChild(i);rows.appendChild(row)});save.disabled=false;status.textContent=old.data?.length?'Existing points loaded — edit and save.':'No points for this date yet.'};$('ppLoad').onclick=load;date.onchange=load;save.onclick=async()=>{const d=date.value;if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return status.textContent='Choose a valid date.';const vals=[...rows.querySelectorAll('input[data-player]')].map(i=>({player_id:i.dataset.player,points:Math.max(0,Math.min(99,Number(i.value)||0))}));save.disabled=true;save.textContent='Saving…';const q=await db.rpc('admin_set_past_points',{p_session_date:d,p_entries:vals});if(q.error){save.disabled=false;save.textContent='Save Past Points';return status.textContent='Could not save past points: '+q.error.message}status.textContent='Saved successfully ✓';save.textContent='Saved ✓';setTimeout(()=>{close();location.reload()},600)};date.value=new Date().toISOString().slice(0,10);await load()}
 function weekId(d){const x=new Date(d+'T00:00:00');x.setHours(0,0,0,0);const n=x.getDay();x.setDate(x.getDate()+(n===0?-6:1-n));return x.toISOString().slice(0,10)}
-function weekText(id){const s=new Date(id+'T00:00:00'),e=new Date(s);e.setDate(e.getDate()+6);return s.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' – '+e.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
+function weekText(id){const s=new Date(id+'T00:00:00');s.setDate(s.getDate()+3);return s.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
 function gamePoints(g){const w=Number(g.winner_score),l=Number(g.loser_score);return{w:Number.isFinite(w)&&w>=21?3:0,l:Number.isFinite(w)&&Number.isFinite(l)&&w-l<=3?1:0}}
 function ids(v){if(Array.isArray(v))return v;try{const x=JSON.parse(v);return Array.isArray(x)?x:[]}catch(e){return typeof v==='string'?v.split(',').map(x=>x.trim()).filter(Boolean):[]}}
-function findPlayer(ps,v){return ps.find(p=>p.id===v||p.name===v||p.nickname===v||(p.nickname||p.name)===v)}
+function findPlayer(ps,v){return ps.find(p=>p.id===v||p.name===v||p.nickname===v||(dn(p))===v)}
 async function historyData(){const [pr,gr,pp]=await Promise.all([db.from('players').select('id,name,nickname,full_name,avatar_url,active').order('name'),db.from('games').select('*').order('played_at',{ascending:true}),db.from('past_points').select('*')]);if(pr.error||gr.error||pp.error)return null;return{players:pr.data||[],games:gr.data||[],past:pp.data||[]}}
 function historyStats(id,data){const by={};data.players.forEach(p=>by[p.id]={p,wins:0,games:0,points:0});data.games.filter(g=>(g.week_id||weekId(new Date(g.played_at||Date.now()).toISOString().slice(0,10)))===id).forEach(g=>{const q=gamePoints(g);ids(g.winners).concat(ids(g.losers)).forEach(v=>{const p=findPlayer(data.players,v);if(p)by[p.id].games++});ids(g.winners).forEach(v=>{const p=findPlayer(data.players,v);if(p){by[p.id].wins++;by[p.id].points+=q.w}});ids(g.losers).forEach(v=>{const p=findPlayer(data.players,v);if(p)by[p.id].points+=q.l})});data.past.filter(x=>weekId(x.session_date)===id).forEach(x=>{if(by[x.player_id])by[x.player_id].points+=Number(x.points)||0});return Object.values(by).filter(x=>x.games||x.points).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.p.name.localeCompare(b.p.name))}
-async function historyView(){if(historyInstalled)return;const h=$('history');if(!h)return;const data=await historyData();if(!data)return;const current=weekId(new Date().toISOString().slice(0,10));const idsList=[...new Set(data.games.map(g=>g.week_id||weekId(new Date(g.played_at||Date.now()).toISOString().slice(0,10))).concat(data.past.map(x=>weekId(x.session_date))))].sort().reverse().filter(x=>x!==current);h.innerHTML='';const empty=$('historyEmpty');if(empty)empty.classList.toggle('hidden',idsList.length>0);idsList.forEach(id=>{const s=historyStats(id,data),top=s.slice(0,3),box=document.createElement('div');box.className='week';box.innerHTML='<button type="button" class="btn ghost" style="width:100%;text-align:left" data-week="'+esc(id)+'"><strong>📅 '+esc(weekText(id))+'</strong><div class="muted" style="margin-top:6px">'+(top.length?top.map((x,i)=>['🥇','🥈','🥉'][i]+' '+esc(x.p.nickname||x.p.name)+' · '+x.points+' pts').join(' &nbsp; '):'No results')+'</div><div class="muted" style="margin-top:6px">Tap to view full leaderboard →</div></button>';h.appendChild(box);box.querySelector('[data-week]').onclick=()=>showHistory(id,data)})
+async function historyView(){if(historyInstalled)return;const h=$('history');if(!h)return;const data=await historyData();if(!data)return;const current=weekId(new Date().toISOString().slice(0,10));const idsList=[...new Set(data.games.map(g=>g.week_id||weekId(new Date(g.played_at||Date.now()).toISOString().slice(0,10))).concat(data.past.map(x=>weekId(x.session_date))))].sort().reverse().filter(x=>x!==current);h.innerHTML='';const empty=$('historyEmpty');if(empty)empty.classList.toggle('hidden',idsList.length>0);idsList.forEach(id=>{const s=historyStats(id,data),top=s.slice(0,3),box=document.createElement('div');box.className='week';box.innerHTML='<button type="button" class="btn ghost" style="width:100%;text-align:left" data-week="'+esc(id)+'"><strong>📅 '+esc(weekText(id))+'</strong><div class="muted" style="margin-top:6px">'+(top.length?top.map((x,i)=>['🥇','🥈','🥉'][i]+' '+esc(dn(x.p))+' · '+x.points+' pts').join(' &nbsp; '):'No results')+'</div><div class="muted" style="margin-top:6px">Tap to view full leaderboard →</div></button>';h.appendChild(box);box.querySelector('[data-week]').onclick=()=>showHistory(id,data)})
 historyInstalled=true}
-async function showHistory(id,data){const isAdmin=await admin();const s=historyStats(id,data),top=s.slice(0,3),pod=top.map((x,i)=>'<div class="pod '+['one','two','three'][i]+'">'+(x.p.avatar_url?'<img src="'+esc(x.p.avatar_url)+'">':'<span class="blank"></span>')+'<div class="podName">'+esc(x.p.nickname||x.p.name)+'</div><div class="podPoints">'+x.points+' pts · '+x.wins+'W'+(x.games?' · '+Math.round(x.wins/x.games*100)+'%':'')+'</div><div class="podBase">'+['🥇','🥈','🥉'][i]+'</div></div>').join(''),rows=s.map((x,i)=>'<div class="lb"><div class="rank">'+(i+1)+'</div><div>'+(x.p.avatar_url?'<div class="avatar"><img src="'+esc(x.p.avatar_url)+'"></div>':'<div class="avatar"></div>')+'</div><div class="name">'+esc(x.p.nickname||x.p.name)+'<div class="full">'+esc(x.p.full_name||x.p.name||'')+'</div></div><div class="stats"><div class="pts">'+x.points+' pts</div><div class="wl">'+x.wins+'W · '+x.games+' games'+(x.games?' · '+Math.round(x.wins/x.games*100)+'% win':'')+'</div></div></div>').join('');modal('<div style="display:flex;justify-content:space-between;align-items:center"><div><h2 style="margin:0">🏆 Weekly History</h2><div class="muted" style="margin-top:4px">'+esc(weekText(id))+'</div></div><button id="histClose" class="btn ghost">Close</button></div><div class="podium">'+(pod||'<div class="muted">No results for this week.</div>')+'</div><h2 style="margin-top:18px">Leaderboard</h2><div>'+rows+'</div>'+(isAdmin?'<div class="row" style="margin-top:16px"><button id="histEdit" class="btn gold">✏️ Edit Week</button><button id="histDelete" class="btn danger">🗑️ Delete Week</button></div>':'') );$('histClose').onclick=close;if($('histEdit'))$('histEdit').onclick=()=>{close();pastPoints()};if($('histDelete'))$('histDelete').onclick=()=>deleteHistory(id,data)}
+async function showHistory(id,data){const isAdmin=await admin();const s=historyStats(id,data),top=s.slice(0,3),pod=top.map((x,i)=>'<div class="pod '+['one','two','three'][i]+'">'+(x.p.avatar_url?'<img src="'+esc(x.p.avatar_url)+'">':'<span class="blank"></span>')+'<div class="podName">'+esc(dn(x.p))+'</div><div class="podPoints">'+x.points+' pts · '+x.wins+'W'+(x.games?' · '+Math.round(x.wins/x.games*100)+'%':'')+'</div><div class="podBase">'+['🥇','🥈','🥉'][i]+'</div></div>').join(''),rows=s.map((x,i)=>'<div class="lb"><div class="rank">'+(i+1)+'</div><div>'+(x.p.avatar_url?'<div class="avatar"><img src="'+esc(x.p.avatar_url)+'"></div>':'<div class="avatar"></div>')+'</div><div class="name">'+esc(dn(x.p))+'<div class="full">'+esc(x.p.full_name||x.p.name||'')+'</div></div><div class="stats"><div class="pts">'+x.points+' pts</div><div class="wl">'+x.wins+'W · '+x.games+' games'+(x.games?' · '+Math.round(x.wins/x.games*100)+'% win':'')+'</div></div></div>').join('');modal('<div style="display:flex;justify-content:space-between;align-items:center"><div><h2 style="margin:0">🏆 Weekly History</h2><div class="muted" style="margin-top:4px">'+esc(weekText(id))+'</div></div><button id="histClose" class="btn ghost">Close</button></div><div class="podium">'+(pod||'<div class="muted">No results for this week.</div>')+'</div><h2 style="margin-top:18px">Leaderboard</h2><div>'+rows+'</div>'+(isAdmin?'<div class="row" style="margin-top:16px"><button id="histEdit" class="btn gold">✏️ Edit Week</button><button id="histDelete" class="btn danger">🗑️ Delete Week</button></div>':'') );$('histClose').onclick=close;if($('histEdit'))$('histEdit').onclick=()=>{close();pastPoints()};if($('histDelete'))$('histDelete').onclick=()=>deleteHistory(id,data)}
 async function deleteHistory(id,data){if(!await admin())return alert('Admin login required.');if(!confirm('Delete this entire weekly history? This will remove its recorded games and past points.'))return;const g=await db.from('games').delete().eq('week_id',id);if(g.error)return alert('Could not delete games: '+g.error.message);const dates=[...new Set(data.past.filter(x=>weekId(x.session_date)===id).map(x=>x.session_date))];for(const d of dates){const q=await db.from('past_points').delete().eq('session_date',d);if(q.error)return alert('Could not delete past points: '+q.error.message)}historyInstalled=false;close();location.reload()}
-async function gameRecords(){if(Date.now()-gameRecordsLast<5000)return;gameRecordsLast=Date.now();const host=$('podium');if(!host)return;let box=$('todayGameRecords');if(!box){box=document.createElement('div');box.id='todayGameRecords';host.insertAdjacentElement('beforebegin',box)}const [gr,pr]=await Promise.all([db.from('games').select('id,played_at,winners,losers,winner_score,loser_score').order('played_at',{ascending:false}),db.from('players').select('id,name,nickname').order('name')]);if(gr.error||pr.error){box.innerHTML='';return}const ps=pr.data||[],today=new Date();const games=(gr.data||[]).filter(g=>{const d=new Date(g.played_at||0);return d.toDateString()===today.toDateString()});let html='<h3 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#E8C978;margin:0 0 8px">📋 Game Records</h3>';if(!games.length){html+='<div class="muted">No games recorded today yet.</div>'}else{html+=games.map((g,i)=>{const winners=ids(g.winners).map(v=>findPlayer(ps,v)?.nickname||findPlayer(ps,v)?.name||String(v));const losers=ids(g.losers).map(v=>findPlayer(ps,v)?.nickname||findPlayer(ps,v)?.name||String(v));const wt=winners.length?winners.join(' + '):'Winning team';const lt=losers.length?losers.join(' + '):'Losing team';const ws=g.winner_score??'—',ls=g.loser_score??'—';const time=g.played_at?new Date(g.played_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'';return '<div class="today-game"><div class="today-game-time">Game '+(games.length-i)+' · '+esc(time)+'</div><div class="today-game-teams"><div class="today-team">'+esc(wt)+'</div><div class="today-score">'+esc(ws)+' – '+esc(ls)+'</div><div class="today-team right">'+esc(lt)+'</div></div><div class="today-winner">🏆 '+esc(wt)+' won</div></div>'}).join('')}box.innerHTML=html}
+async function gameRecords(){if(Date.now()-gameRecordsLast<5000)return;gameRecordsLast=Date.now();const host=$('podium');if(!host)return;let box=$('todayGameRecords');if(!box){box=document.createElement('div');box.id='todayGameRecords';host.insertAdjacentElement('beforebegin',box)}const [gr,pr]=await Promise.all([db.from('games').select('id,played_at,winners,losers,winner_score,loser_score').order('played_at',{ascending:false}),db.from('players').select('id,name,nickname,full_name,avatar_url').order('name')]);if(gr.error||pr.error){box.innerHTML='';return}const ps=pr.data||[],today=new Date();const games=(gr.data||[]).filter(g=>{const d=new Date(g.played_at||0);return d.toDateString()===today.toDateString()});let html='<h3 style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#E8C978;margin:0 0 8px">📋 Game Records</h3>';if(!games.length){html+='<div class="muted">No games recorded today yet.</div>'}else{const av=p=>p&&p.avatar_url?'<img src="'+esc(p.avatar_url)+'">':'<span class="blank"></span>';html+=games.map((g,i)=>{const winnerPs=ids(g.winners).map(v=>findPlayer(ps,v));const loserPs=ids(g.losers).map(v=>findPlayer(ps,v));const winners=winnerPs.map(p=>dn(p)||'Player');const losers=loserPs.map(p=>dn(p)||'Player');const wt=winners.length?winners.join(' + '):'Winning team';const lt=losers.length?losers.join(' + '):'Losing team';const ws=g.winner_score??'—',ls=g.loser_score??'—';const time=g.played_at?new Date(g.played_at).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'';const wAv='<div class="today-team-avatars">'+winnerPs.map(av).join('')+'</div>';const lAv='<div class="today-team-avatars">'+loserPs.map(av).join('')+'</div>';return '<div class="today-game"><div class="today-game-time">Game '+(games.length-i)+' · '+esc(time)+'</div><div class="today-game-teams"><div class="today-team">'+wAv+esc(wt)+'</div><div class="today-score">'+esc(ws)+' – '+esc(ls)+'</div><div class="today-team right">'+esc(lt)+lAv+'</div></div><div class="today-winner">🏆 '+esc(wt)+' won</div></div>'}).join('')}box.innerHTML=html}
 function install(){const adminBox=$('adminPanel');if(!adminBox||adminBox.classList.contains('hidden')){installed=false;return}if(installed)return;const box=document.createElement('div');box.id='lbAdminTools';box.style.cssText='margin-top:14px;padding-top:14px;border-top:1px solid rgba(250,246,237,.14)';box.innerHTML='<div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#E8C978;margin-bottom:9px">Admin Tools</div><div class="row"><button id="lbPhoto" class="btn gold" type="button">Add / Change Profile Photo</button><button id="lbGameDelete" class="btn danger" type="button">Delete Accidental Game</button><button id="lbProfileDelete" class="btn danger" type="button">Delete Profile</button><button id="lbPast" class="btn ghost" type="button">Add / Edit Past Points</button></div>';adminBox.appendChild(box);$('lbPhoto').onclick=photo;$('lbGameDelete').onclick=deleteGame;$('lbProfileDelete').onclick=deleteProfile;$('lbPast').onclick=pastPoints;const old=$('pastGame');if(old){old.onclick=pastPoints;old.dataset.ppBound='1'}installed=true}
 function loop(){removePins();install();const old=$('pastGame');if(old&&old.dataset.ppBound!=='1'){old.onclick=pastPoints;old.dataset.ppBound='1'}if($('history')&&!historyInstalled)historyView();gameRecords()}
 setInterval(loop,800);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loop);else loop();
 })();
 </script>
+<style>
+#lbSinglesBtn{margin-top:8px}
+.lb-singles-row{display:grid;grid-template-columns:1fr 95px;gap:8px;align-items:center;margin:9px 0}
+.lb-singles-note{font-size:11px;color:rgba(250,246,237,.62);margin-top:6px}
+</style>
+<script>
+(function(){
+  const dn=p=>{if(!p)return '';const fn=(p.full_name||p.name||'Player').trim();const parts=fn.split(/\s+/);return parts.length>1?parts[0]+' '+parts[1][0]+'.':parts[0];};
+  async function lbSinglesAdmin(){const r=await db.auth.getSession();return r.data?.session?.user?.id===A}
+  async function lbRecordSingles(){
+    if(!await lbSinglesAdmin()) return alert('Admin login required.');
+    const r=await db.from('players').select('id,name,nickname,active').order('name');
+    if(r.error) return alert('Could not load players: '+r.error.message);
+    const ps=(r.data||[]).filter(p=>p.active!==false);
+    const opts=ps.map(p=>'<option value="'+esc(p.id)+'">'+esc(dn(p))+'</option>').join('');
+    modal('<h2 style="margin-top:0">🏸 Record Singles Game</h2><div class="muted">Same scoring rules as doubles: play to 21, win by 2, maximum 30.</div><div style="margin-top:12px"><div class="lb-singles-row"><select id="lbSW" class="field">'+opts+'</select><input id="lbSWScore" class="field" type="number" min="0" max="30" step="1" placeholder="Winner score"></div><div class="lb-singles-row"><select id="lbSL" class="field">'+opts+'</select><input id="lbSLScore" class="field" type="number" min="0" max="30" step="1" placeholder="Loser score"></div><div class="lb-singles-note">The same player cannot be both winner and loser.</div></div><div style="margin-top:14px"><button id="lbSSave" class="btn gold">Save Singles Game</button><button id="lbSClose" class="btn ghost" style="margin-left:6px">Cancel</button></div>');
+    $('lbSClose').onclick=close;
+    $('lbSSave').onclick=async()=>{
+      const w=$('lbSW').value,l=$('lbSL').value,ws=Number($('lbSWScore').value),ls=Number($('lbSLScore').value);
+      if(!w||!l||w===l)return alert('Choose two different players.');
+      if(!Number.isInteger(ws)||!Number.isInteger(ls))return alert('Enter whole-number scores.');
+      if(ws<21||ws>30||ls<0||ls>=ws)return alert('Winner must score 21–30 and more than the loser.');
+      if(ws<30&&ws-ls<2)return alert('Winner must lead by at least 2 points.');
+      if(ws===30&&ls<28)return alert('At 30, the loser must have at least 28 points.');
+      const b=$('lbSSave');b.disabled=true;b.textContent='Saving…';
+      const now=new Date();
+      const q=await db.from('games').insert({winners:[w],losers:[l],winner_score:ws,loser_score:ls,played_at:now.toISOString(),week_id:weekId(now.toISOString().slice(0,10))});
+      if(q.error){b.disabled=false;b.textContent='Save Singles Game';return alert('Could not save singles game: '+q.error.message)}
+      close();location.reload();
+    };
+  }
+  function lbInstallSingles(){
+    const adminBox=$('lbAdminTools');
+    if(!adminBox||$('lbSinglesBtn'))return;
+    const b=document.createElement('button');b.id='lbSinglesBtn';b.className='btn gold';b.type='button';b.textContent='🏸 Record Singles Game';adminBox.appendChild(b);b.onclick=lbRecordSingles;
+  }
+  setInterval(lbInstallSingles,800);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',lbInstallSingles);else lbInstallSingles();
+})();
 </script>
+<style>
+#gamePanel .muted.lb-mode-note{color:#E8C978;font-weight:700}
+</style>
+<script>
+(function(){
+  'use strict';
+  const U='https://zcahhfswtdrdmguppqtp.supabase.co';
+  const K='sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs';
+  const A='a517d9bd-bc9c-4e59-b36d-503747621aa4';
+  const db=window.supabase.createClient(U,K);
+  const $=id=>document.getElementById(id);
+  const idsFor=sel=>[...document.querySelectorAll(sel)].map(b=>b.textContent.trim()).filter(Boolean);
+  const esc=v=>{const d=document.createElement('div');d.textContent=v??'';return d.innerHTML};
+  const dn=p=>{if(!p)return '';const fn=(p.full_name||p.name||'Player').trim();const parts=fn.split(/\s+/);return parts.length>1?parts[0]+' '+parts[1][0]+'.':parts[0];};
+  let busy=false;
+  async function admin(){const r=await db.auth.getSession();return r.data?.session?.user?.id===A}
+  async function singleSave(){
+    if(busy)return;
+    if(!await admin())return;
+    const wNames=idsFor('#winnerGrid .pick.win');
+    const lNames=idsFor('#loserGrid .pick.lose');
+    if(wNames.length!==1||lNames.length!==1)return;
+    const ws=Number($('winnerScore')?.value),ls=Number($('loserScore')?.value);
+    if(!Number.isInteger(ws)||!Number.isInteger(ls))return alert('Enter whole-number scores.');
+    if(ws<21||ws>30||ls<0||ls>=ws)return alert('Winner must score 21–30 and more than the loser.');
+    if(ws<30&&ws-ls<2)return alert('Winner must lead by at least 2 points.');
+    if(ws===30&&ls<28)return alert('At 30, the loser must have at least 28 points.');
+    const pr=await db.from('players').select('id,name,nickname').in('name',wNames.concat(lNames));
+    if(pr.error)return alert('Could not load players: '+pr.error.message);
+    const find=n=>pr.data?.find(p=>p.name===n||p.nickname===n||(dn(p))===n);
+    const w=find(wNames[0]),l=find(lNames[0]);
+    if(!w||!l)return alert('Could not identify the selected players. Please try again.');
+    busy=true;
+    const b=$('saveGame');if(b){b.disabled=true;b.textContent='Saving…'}
+    const now=new Date();
+    const d=new Date($('gameDate')?.value||now);
+    const monday=new Date(d);monday.setHours(0,0,0,0);const day=monday.getDay();monday.setDate(monday.getDate()+(day===0?-6:1-day));
+    const q=await db.from('games').insert({winners:[w.id],losers:[l.id],winner_score:ws,loser_score:ls,played_at:d.toISOString(),week_id:monday.toISOString().slice(0,10)});
+    if(q.error){busy=false;if(b){b.disabled=false;b.textContent='Save Game'}return alert('Could not save singles game: '+q.error.message)}
+    location.reload();
+  }
+  function refresh(){
+    const panel=$('gamePanel'),b=$('saveGame');if(!panel||panel.classList.contains('hidden')||!b)return;
+    const w=idsFor('#winnerGrid .pick.win'),l=idsFor('#loserGrid .pick.lose');
+    const single=w.length===1&&l.length===1;
+    if(single){
+      b.disabled=false;
+      const a=document.querySelector('#gamePanel .muted.lb-mode-note');
+      if(a)a.textContent='Singles — tap 1 winner and 1 loser';
+      else {
+        const notes=[...panel.querySelectorAll('.muted')];
+        notes.forEach(n=>{if(n.textContent.includes('Winners'))n.textContent='Singles/Doubles — Winners: tap 1 for singles or 2 for doubles';if(n.textContent.includes('Losers'))n.textContent='Losers: tap 1 for singles or 2 for doubles'});
+      }
+    }
+  }
+  setInterval(refresh,150);
+})();
+</script>
+<script>
+(function(){
+  'use strict';
+  const U='https://zcahhfswtdrdmguppqtp.supabase.co';
+  const K='sb_publishable_CeiB5DOuyX7xKdK87tK2QQ_5Y9phmOs';
+  const A='a517d9bd-bc9c-4e59-b36d-503747621aa4';
+  const db=window.supabase.createClient(U,K);
+  let busy=false;
+  const norm=v=>String(v??'').normalize('NFKC').replace(/\s+/g,' ').trim().toLowerCase();
+  const selected=sel=>[...document.querySelectorAll(sel)].filter(b=>b.classList.contains('pick')).map(b=>({b,text:norm(b.textContent),id:b.dataset.playerId||b.dataset.id||b.dataset.player||b.value||''}));
+  async function isAdmin(){const r=await db.auth.getSession();return r.data?.session?.user?.id===A}
+  async function lookup(sel){
+    const bs=selected(sel);
+    if(bs.length!==1)return null;
+    const b=bs[0];
+    const r=await db.from('players').select('id,name,nickname,full_name');
+    if(r.error)throw new Error('Could not load players: '+r.error.message);
+    const ps=r.data||[];
+    if(b.id){const exact=ps.find(p=>String(p.id)===String(b.id));if(exact)return exact}
+    const candidates=new Set([b.text,norm(b.id),norm(b.b?.id),norm(b.b?.getAttribute?.('data-name')),norm(b.b?.getAttribute?.('aria-label'))]);
+    const found=ps.find(p=>[p.name,p.nickname,p.full_name,p.id].some(v=>candidates.has(norm(v))));
+    if(found)return found;
+    const fuzzy=ps.filter(p=>[p.name,p.nickname,p.full_name].some(v=>{const x=norm(v);return x&&b.text&&(b.text===x||b.text.includes(x)||x.includes(b.text))}));
+    return fuzzy.length===1?fuzzy[0]:null;
+  }
+  async function saveSingles(){
+    if(busy||!await isAdmin())return;
+    const w=selected('#winnerGrid .pick.win'),l=selected('#loserGrid .pick.lose');
+    if(w.length!==1||l.length!==1)return;
+    const ws=Number(document.getElementById('winnerScore')?.value),ls=Number(document.getElementById('loserScore')?.value);
+    if(!Number.isInteger(ws)||!Number.isInteger(ls))return alert('Enter whole-number scores.');
+    if(ws<21||ws>30||ls<0||ls>=ws)return alert('Winner must score 21–30 and more than the loser.');
+    if(ws<30&&ws-ls<2)return alert('The winner must lead by at least 2 points.');
+    if(ws===30&&ls<28)return alert('At 30, the loser must have at least 28 points.');
+    let wp,lp;
+    try{wp=await lookup('#winnerGrid .pick.win');lp=await lookup('#loserGrid .pick.lose')}catch(e){return alert(e.message)}
+    if(!wp||!lp)return alert('Could not identify the selected players. Please tap the player names again and try once more.');
+    if(wp.id===lp.id)return alert('Winner and loser must be different players.');
+    busy=true;
+    const b=document.getElementById('saveGame');if(b){b.disabled=true;b.textContent='Saving…'}
+    const raw=document.getElementById('gameDate')?.value;
+    const d=raw?new Date(raw+'T12:00:00'):new Date();
+    const q=await db.from('games').insert({winners:[wp.id],losers:[lp.id],winner_score:ws,loser_score:ls,played_at:d.toISOString(),week_id:(()=>{const x=new Date(d);x.setHours(0,0,0,0);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return x.toISOString().slice(0,10)})()});
+    if(q.error){busy=false;if(b){b.disabled=false;b.textContent='Save Game'}return alert('Could not save singles game: '+q.error.message)}
+    location.reload();
+  }
+  document.addEventListener('click',e=>{if(e.target?.id==='saveGame'){const w=selected('#winnerGrid .pick.win'),l=selected('#loserGrid .pick.lose');if(w.length===1&&l.length===1){e.preventDefault();e.stopImmediatePropagation();saveSingles()}}},true);
+})();
+</script>`;
     const body = html.includes('</body>') ? html.replace('</body>', injection + '</body>') : html + injection;
     return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers });
   }
