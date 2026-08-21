@@ -197,8 +197,8 @@ setInterval(loop,800);if(document.readyState==='loading')document.addEventListen
     busy=true;
     const b=document.getElementById('saveGame');if(b){b.disabled=true;b.textContent='Saving…'}
     const raw=document.getElementById('gameDate')?.value;
-    const d=raw?new Date(raw+'T12:00:00'):new Date();
-    let q;
+const d=raw?new Date(raw):new Date();
+let q;
     try{q=await db.from('games').insert({winners:[wp.id],losers:[lp.id],winner_score:ws,loser_score:ls,played_at:d.toISOString(),week_id:(()=>{const x=new Date(d);x.setHours(0,0,0,0);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return x.toISOString().slice(0,10)})()})}catch(e){busy=false;if(b){b.disabled=false;b.textContent='Save Game'}return alert('Could not save singles game: '+(e?.message||e))}
     if(q.error){busy=false;if(b){b.disabled=false;b.textContent='Save Game'}return alert('Could not save singles game: '+q.error.message)}
     location.reload();
