@@ -83,7 +83,8 @@ setInterval(loop,800);if(document.readyState==='loading')document.addEventListen
       if(ws===30&&ls<28)return alert('At 30, the loser must have at least 28 points.');
       const b=$('lbSSave');b.disabled=true;b.textContent='Saving…';
       const now=new Date();
-      const q=await db.from('games').insert({winners:[w],losers:[l],winner_score:ws,loser_score:ls,played_at:now.toISOString(),week_id:weekId(now.toISOString().slice(0,10))});
+      let q;
+      try{q=await db.from('games').insert({winners:[w],losers:[l],winner_score:ws,loser_score:ls,played_at:now.toISOString(),week_id:weekId(now.toISOString().slice(0,10))})}catch(e){b.disabled=false;b.textContent='Save Singles Game';return alert('Could not save singles game: '+(e?.message||e))}
       if(q.error){b.disabled=false;b.textContent='Save Singles Game';return alert('Could not save singles game: '+q.error.message)}
       close();location.reload();
     };
@@ -197,7 +198,8 @@ setInterval(loop,800);if(document.readyState==='loading')document.addEventListen
     const b=document.getElementById('saveGame');if(b){b.disabled=true;b.textContent='Saving…'}
     const raw=document.getElementById('gameDate')?.value;
     const d=raw?new Date(raw+'T12:00:00'):new Date();
-    const q=await db.from('games').insert({winners:[wp.id],losers:[lp.id],winner_score:ws,loser_score:ls,played_at:d.toISOString(),week_id:(()=>{const x=new Date(d);x.setHours(0,0,0,0);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return x.toISOString().slice(0,10)})()});
+    let q;
+    try{q=await db.from('games').insert({winners:[wp.id],losers:[lp.id],winner_score:ws,loser_score:ls,played_at:d.toISOString(),week_id:(()=>{const x=new Date(d);x.setHours(0,0,0,0);const day=x.getDay();x.setDate(x.getDate()+(day===0?-6:1-day));return x.toISOString().slice(0,10)})()})}catch(e){busy=false;if(b){b.disabled=false;b.textContent='Save Game'}return alert('Could not save singles game: '+(e?.message||e))}
     if(q.error){busy=false;if(b){b.disabled=false;b.textContent='Save Game'}return alert('Could not save singles game: '+q.error.message)}
     location.reload();
   }
