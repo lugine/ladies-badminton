@@ -13,8 +13,8 @@ export default {
 .today-game:last-child{margin-bottom:0}
 .today-game-time{font-size:10px;color:rgba(250,246,237,.5);margin-bottom:9px;text-transform:uppercase;letter-spacing:.08em}
 .today-game-teams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center}
-.today-team{display:flex;align-items:center;gap:7px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
-.today-team.right{flex-direction:row-reverse;text-align:right}
+.today-team{display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;line-height:1.3;overflow-wrap:anywhere;text-align:center}
+.today-team.right{text-align:center}
 .today-score{font-size:21px;font-weight:900;color:#D4A537;white-space:nowrap}
 .today-winner{font-size:10px;color:#E8C978;margin-top:8px;font-weight:800}.today-team-avatars{display:flex;gap:4px;flex:none}.today-team-avatars img,.today-team-avatars .blank{width:26px;height:26px;border-radius:50%;object-fit:cover;background:rgba(250,246,237,.12);border:1px solid rgba(212,165,55,.4);display:inline-block}
 @media(max-width:430px){.today-game-teams{gap:7px}.today-score{font-size:18px}.today-game{padding:12px 10px}}
